@@ -16,6 +16,7 @@ using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Management;
 
 using WmiLight;
@@ -39,6 +40,17 @@ namespace MemoryMonitor
 		private int warningMemUsage = 800000000;
 		private int criticalMemUsage = 850000000;
 		
+
+		/// <summary>
+		/// Verwendete Hostliste für die Routine
+		/// </summary>
+		string _strHostFileList;
+		public string strHostFileList {
+			get { return _strHostFileList; }
+			set { _strHostFileList = value; }
+		}
+		
+		Dictionary<string, string> alias = new Dictionary<string, string>();
 		
 		private string csvLogFile = "";
 		private string processToWatch = "JM4";
@@ -296,6 +308,95 @@ namespace MemoryMonitor
 				Debug.WriteLine(e.Message);
 			}
 		}
+		
+		#region helper
 
+		/// <summary>
+		/// Liest die Liste der Hosts aus der angegebenen Text Datei ein
+		/// Die Liste ist Zeilenorientiert
+		/// Ein Host pro Zeile
+		/// Zeilen beginnend mit '#' werden ignoriert und können als Kommentar genutzt werden
+		/// </summary>
+		/// <param name="hostFileList">Dateiname inkl. Pfad</param>
+		/// <returns>true bei erfolgreichem Einlesen</returns>
+		bool readRoutineListFromFile(string hostFileList)
+		{
+			TextReader trHostList = null;
+			string strTmp = null;
+			List<string> hosts; 
+			//string[] alias;
+			
+			if (hostFileList == null) {
+				hostFileList = strHostFileList;
+			}
+			
+			if (File.Exists(hostFileList)) 
+			{
+				hosts = new List<string>();
+//				clbRoutineListe.Items.Clear();
+				try 
+				{
+					if (alias.Count > 0) {
+						alias.Clear();
+					}
+					using (trHostList = File.OpenText(hostFileList)) 
+					{
+						while((strTmp = trHostList.ReadLine()) != null)
+						{
+							if (!strTmp.StartsWith("#", StringComparison.CurrentCultureIgnoreCase)) 
+							{
+								//	Regex auf AC Namenskonvention oder IP Adresse
+								if (Regex.IsMatch(strTmp, "^((([0-9]{1,3}).){3}.[0-9]{1,3})|((([A-Za-z]{2})-){3}[0-9]{3})$"))
+								{
+									if (strTmp.Split(';').Length > 1)
+									{
+//										clbRoutineListe.Items.Add(strTmp.Split(';')[1]);
+										hosts.Add(strTmp.Split(';')[1]);
+										alias.Add(strTmp.Split(';')[1],strTmp.Split(';')[0]);
+									}
+									else
+										hosts.Add(strTmp);
+								}
+							}
+//							else
+//								strHostGroup = strTmp;								
+						}
+						
+//						if (hosts.Count>0) {
+//							clbRoutineListe.Items.Clear();
+//							clbRoutineListe.Items.AddRange(hosts.ToArray());
+//						}
+					}
+				} 
+				#region exception				
+				catch (IOException ioE) 
+				{
+					Debug.WriteLine(string.Format("Error: {0}", ioE.Message), "IOException");
+				}
+				catch (OutOfMemoryException oomE)
+				{
+					Debug.WriteLine(string.Format("Error: {0}", oomE.Message), "OutOfMemoryException");
+				}
+				catch (ObjectDisposedException odE) 
+				{
+					Debug.WriteLine(string.Format("Error: {0}", odE.Message), "ObjectDisposedException");
+				}
+				catch (ArgumentOutOfRangeException aoorE) 
+				{
+					Debug.WriteLine(string.Format("Error: {0}", aoorE.Message), "ArgumentOutOfRangeException");
+				}
+		        catch (Exception exc)
+		        {
+					Debug.WriteLine(string.Format("Error: {0}", exc.Message), "Exception");
+		        }
+				#endregion
+				
+				return true;
+			}
+
+			return false;
+		}
+
+		#endregion
 	}
 }
