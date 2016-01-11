@@ -30,13 +30,12 @@ namespace MemoryMonitor
 	{
 		private NotifyIcon notifyIcon;
 		private ContextMenu notificationMenu;
-		private ToolTip iconToolTip;
 		private bool bBallonTipShowing;
 		private MainForm mainForm;
 		//private System.Windows.Forms.Timer timer;
 		private List<Process> ps;
 		private List<clsProcessTimer> psTimer;
-		
+		FileSystemWatcher m_Watcher;
 		private int warningMemUsage = 800000000;
 		private int criticalMemUsage = 850000000;
 		
@@ -53,6 +52,8 @@ namespace MemoryMonitor
 		Dictionary<string, string> alias = new Dictionary<string, string>();
 		
 		private string csvLogFile = "";
+		private string commandFile = "c:\\temp\\MemUsageLog\\command.file";
+		
 		private string processToWatch = "JM4";
 		
 		string protokollSavePath = @"c:\temp\MemUsageLog\";
@@ -65,9 +66,9 @@ namespace MemoryMonitor
 		{
 			notifyIcon = new NotifyIcon();
 			notificationMenu = new ContextMenu(InitializeMenu());
-			iconToolTip = new ToolTip();
 			ps = new List<Process>();
 			psTimer = new List<clsProcessTimer>();
+			m_Watcher = new FileSystemWatcher();
 			
 			ps.AddRange(Process.GetProcessesByName(processToWatch));
 			for (int i = 0; i < ps.Count; i++) {
@@ -87,16 +88,30 @@ namespace MemoryMonitor
 			notifyIcon.Icon = (Icon)resources.GetObject("$this.Icon");
 			notifyIcon.ContextMenu = notificationMenu;
 			
-//			getRemoteWMIData();
 			getRemoteWMIData_WMILight();
 			
-//			csvLogFile = Path.GetDirectoryName(Application.ExecutablePath) + "\\ProcessLog.csv";
-
-//			timer = new System.Windows.Forms.Timer();	//(timerTick, null, Infinite, 15000);
-//			timer.Tick += timerTick;
-//			timer.Interval = normalInterval;
-//			timer.Enabled = true;
+			#region systemfilewatcher
+			m_Watcher.Path = "c:\\temp\\MemUsageLog\\";
+			m_Watcher.Filter = "command.file";
+			m_Watcher.NotifyFilter = 
+//						NotifyFilters.LastAccess |
+//                        NotifyFilters.LastWrite | 
+//                        NotifyFilters.FileName | 
+						NotifyFilters.Size 
+//						NotifyFilters.Attributes |
+//						NotifyFilters.CreationTime |
+//						NotifyFilters.Security |
+//                        NotifyFilters.DirectoryName
+				;
+			m_Watcher.IncludeSubdirectories = false;
 			
+			m_Watcher.Changed += new FileSystemEventHandler(OnChanged);
+			m_Watcher.Created += new FileSystemEventHandler(OnChanged);
+			m_Watcher.Deleted += new FileSystemEventHandler(OnChanged);
+			m_Watcher.Renamed += new RenamedEventHandler(OnRenamed);
+			
+			m_Watcher.EnableRaisingEvents = true;
+			#endregion
 		}
 		
 		void IconMouseOver(object sender, EventArgs e)
@@ -191,6 +206,7 @@ namespace MemoryMonitor
 					pcstimer.Dispose();
 				}
 				psTimer.Clear();
+				m_Watcher.EnableRaisingEvents = false;
 			}
 			Application.Exit();
 		}
@@ -397,6 +413,79 @@ namespace MemoryMonitor
 			return false;
 		}
 
+		#endregion
+		
+		#region SystemFilewatcherEvents
+		void OnChanged(object sender, FileSystemEventArgs e)
+		{
+			switch (e.ChangeType) 
+			{
+				case WatcherChangeTypes.Changed:
+					Debug.WriteLine(string.Format("{0} Datei wurde geändert", DateTime.Now.ToString()), "WachterEvent() - Changed");
+					readCommandFromFile();
+					break;
+					
+				case WatcherChangeTypes.Created:
+					Debug.WriteLine(string.Format("{0} Datei wurde erstellt", DateTime.Now.ToString()), "WachterEvent() - Created");
+					break;
+					
+				case WatcherChangeTypes.Deleted:
+					Debug.WriteLine(string.Format("{0} Datei wurde gelöscht", DateTime.Now.ToString()), "WachterEvent() - Delete");
+					break;
+			}
+		}
+		
+		void OnRenamed(object sender, RenamedEventArgs e)
+		{
+			if(e.ChangeType == WatcherChangeTypes.Renamed)
+			{
+				Debug.WriteLine(string.Format("{0} Datei wurde umbenannt", DateTime.Now.ToString()), "WachterEvent() - Rename");
+			}
+		}
+		#endregion
+		
+		#region commandFile
+		void readCommandFromFile()
+		{
+			
+			if (File.Exists(commandFile)) {
+				FileInfo fi = new FileInfo(commandFile);
+				Stack<string> commandStack = new Stack<string>();
+				
+				if (fi.Length > 0) {
+					Debug.WriteLine(string.Format("{0} Datei wurde geändert, Command Wait", DateTime.Now.ToString()), "readCommandFromFile() - Change");
+					
+					foreach(string cmd in File.ReadLines(commandFile))
+					{
+						if (!string.IsNullOrEmpty(cmd)) {
+							commandStack.Push(cmd);
+						}
+					}
+					executeCommandsFromFile(commandStack);
+					File.WriteAllText(commandFile, "");
+				}
+				else
+				{
+					Debug.WriteLine(string.Format("{0} Datei wurde geleert, Command Run", DateTime.Now.ToString()), "readCommandFromFile() - Delete");
+				}
+			}
+			else
+			{
+				File.Create(commandFile);
+				Debug.WriteLine(string.Format("{0} Datei wurde angelegt, Command Empty", DateTime.Now.ToString()), "readCommandFromFile() - Create");
+			}
+		}
+		
+		void executeCommandsFromFile(Stack<string> cmdStack)
+		{
+			if (cmdStack.Count > 0) {
+				//for(int i = cmdStack.Count; i > 0; i--)
+				while(cmdStack.Count > 0)
+				{
+					Debug.WriteLine(string.Format("{0}: " + cmdStack.Pop(), i), "Command in Stack");
+				}
+			}
+		}
 		#endregion
 	}
 }
