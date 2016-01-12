@@ -11,6 +11,7 @@ using System;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Linq;
 using System.Diagnostics;
 using System.Drawing;
 using System.Threading;
@@ -32,8 +33,8 @@ namespace MemoryMonitor
 		private ContextMenu notificationMenu;
 		private bool bBallonTipShowing;
 		private MainForm mainForm;
-		//private System.Windows.Forms.Timer timer;
-		private List<Process> ps;
+		private System.Windows.Forms.Timer garbageTimer;
+		
 		private List<clsProcessTimer> psTimer;
 		FileSystemWatcher m_Watcher;
 		private int warningMemUsage = 800000000;
@@ -51,7 +52,7 @@ namespace MemoryMonitor
 		
 		Dictionary<string, string> alias = new Dictionary<string, string>();
 		
-		private string csvLogFile = "";
+//		private string csvLogFile = "";
 		private string commandFile = "c:\\temp\\MemUsageLog\\command.file";
 		
 		private string processToWatch = "JM4";
@@ -66,9 +67,10 @@ namespace MemoryMonitor
 		{
 			notifyIcon = new NotifyIcon();
 			notificationMenu = new ContextMenu(InitializeMenu());
-			ps = new List<Process>();
+			List<Process> ps = new List<Process>();
 			psTimer = new List<clsProcessTimer>();
 			m_Watcher = new FileSystemWatcher();
+			garbageTimer = new System.Windows.Forms.Timer();
 			
 			ps.AddRange(Process.GetProcessesByName(processToWatch));
 			for (int i = 0; i < ps.Count; i++) {
@@ -76,6 +78,9 @@ namespace MemoryMonitor
 				psTimer[i].Tick += timerTick;
 				psTimer[i].Enabled = true;
 			}
+			garbageTimer.Interval = 6000;		//	Aufräumen der nicht benötigten Prozesstimer
+			garbageTimer.Tick += garbageTimerTick;
+			garbageTimer.Start();
 			
 			
 			notifyIcon.BalloonTipShown += iconShowBallonToolTip;
@@ -218,41 +223,57 @@ namespace MemoryMonitor
 		
 		void timerTick(object sender, EventArgs e)
 		{
-			ps.Clear();
-			ps.AddRange(Process.GetProcessesByName("JM4"));
+//			List<Process> ps = new List<Process>();
+//			ps.AddRange(Process.GetProcessesByName("JM4"));
 			Process pcs = null;;
+			
 			
 			if ((sender as clsProcessTimer) != null)
 			{
-				pcs = Process.GetProcessById(((clsProcessTimer)sender).processID);
+				int psID = 0;
+				//pcs = Process.GetProcessById(((clsProcessTimer)sender).processID);
+				try {
+					psID = ((clsProcessTimer)sender).processID;
+					pcs = Process.GetProcessById(psID);
+				} catch (ArgumentException ae) {
 					
+					Debug.WriteLine("Die ProzessID " + psID + " konnte nicht gefunden werden!\r\n" + ae.Message, "TimerTick()");
+				}
 			}
 			
 			string strCsv;
 			string fileName;
 			
-			if (pcs != null) {
-				//foreach (Process pcs in ps) {
-					fileName = checkFileName(ps.IndexOf(pcs)+1, pcs.ProcessName, pcs.Id);
-					Debug.WriteLine(string.Format("PID: {0} | Name: {1} | Time: {2}| CurrentMem: {3}| PeakMem: {4}", pcs.Id, pcs.ProcessName, DateTime.Now.ToString(), pcs.PrivateMemorySize64.ToString(), pcs.PeakWorkingSet64), "TimerTick()");
-					strCsv = string.Format("{0};\"{1}\";\"{2}\";{3};{4}\r\n", DateTime.Now.ToString("HH:mm:ss"), pcs.Id, pcs.ProcessName, pcs.PrivateMemorySize64.ToString(), pcs.PeakWorkingSet64);
-					
-					if (!File.Exists(fileName)) {
-						File.AppendAllText(fileName, "Time;PID;Name;MemUsage;PeakMemUsage\r\n", new UTF8Encoding(false));
+			if (pcs != null) 
+			{
+				fileName = checkFileName(0, pcs.ProcessName, pcs.Id);
+				Debug.WriteLine(string.Format("PID: {0} | Name: {1} | Time: {2}| CurrentMem: {3}| PeakMem: {4}", pcs.Id, pcs.ProcessName, DateTime.Now.ToString(), pcs.PrivateMemorySize64.ToString(), pcs.PeakWorkingSet64), "TimerTick()");
+				strCsv = string.Format("{0};\"{1}\";\"{2}\";{3};{4}\r\n", DateTime.Now.ToString("HH:mm:ss"), pcs.Id, pcs.ProcessName, pcs.PrivateMemorySize64.ToString(), pcs.PeakWorkingSet64);
+				
+				if (!File.Exists(fileName)) 
+				{
+					File.AppendAllText(fileName, "Time;PID;Name;MemUsage;PeakMemUsage\r\n", new UTF8Encoding(false));
+				}
+				File.AppendAllText(fileName, strCsv, new UTF8Encoding(false));
+				
+				if (pcs.PeakWorkingSet64 > warningMemUsage && pcs.PeakWorkingSet64 < criticalMemUsage) 
+				{
+					if ((sender as clsProcessTimer) != null) 
+					{
+						((clsProcessTimer)sender).setIntervalState(clsProcessTimer.enumIntervallState.warningInterval);
 					}
-					File.AppendAllText(fileName, strCsv, new UTF8Encoding(false));
-					
-					if (pcs.PeakWorkingSet64 > warningMemUsage && pcs.PeakWorkingSet64 < criticalMemUsage) {
-						if ((sender as clsProcessTimer) != null) {
-							((clsProcessTimer)sender).setIntervalState(clsProcessTimer.enumIntervallState.warningInterval);
-						}
-						else if (pcs.PeakWorkingSet64 > criticalMemUsage) {
-							((clsProcessTimer)sender).setIntervalState(clsProcessTimer.enumIntervallState.criticalInterval);
-						}
-						else
-							((clsProcessTimer)sender).setIntervalState(clsProcessTimer.enumIntervallState.normalInterval);
+					else if (pcs.PeakWorkingSet64 > criticalMemUsage) 
+					{
+						((clsProcessTimer)sender).setIntervalState(clsProcessTimer.enumIntervallState.criticalInterval);
 					}
-				//}
+					else
+						((clsProcessTimer)sender).setIntervalState(clsProcessTimer.enumIntervallState.normalInterval);
+				}
+			}
+			else		//	PID Kann nicht gefunden werden
+			{
+				((clsProcessTimer)sender).Stop();
+				((clsProcessTimer)sender).obsolete = true;
 			}
 		}
 
@@ -279,12 +300,12 @@ namespace MemoryMonitor
 			//	####
 			
 			//	#### Dateinamen und vollen Pfad erzeugen
-			string FullFileName = string.Format("{0}\\{6}\\{1}_{2}{7}_{3}_{4}.{5}",
+			string FullFileName = string.Format("{0}\\{6}\\{1}_{2}{7}_{3}{4}.{5}",
 			                                    protokollSavePath, 
 			                                    protokollFileNamePrefix, 
 			                                    suffix == string.Empty ? "" : suffix,
 			                                    strDate,//DateTime.Now.ToString("yyyyMMdd-HHmmss"), 
-			                                    count,
+			                                    count > 0 ? "_"+count : "",
 			                                    filetype == 0 ? protokollFileLogExt : protokollImageExt,
 			                                    strDate,
 			                                    pid > 0 ? "_"+pid : ""
@@ -327,6 +348,55 @@ namespace MemoryMonitor
 		
 		#region helper
 
+		/// <summary>
+		/// Timer Event um die nicht mehr benötigten Prozesstimer wieder freizugeben
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		void garbageTimerTick(object sender, EventArgs e)
+		{
+			//	#####
+			//	Zuerst alle nicht mehr benötigten Timer entfernen
+			//	#####
+			
+			var obsoleteTimer = psTimer.Where(t => t.obsolete).ToList();
+
+			foreach(clsProcessTimer pt in obsoleteTimer)
+			{
+				psTimer.Remove(pt);
+				Debug.WriteLine("PID2: " + pt.processID, "ObsoleteTimer");
+				pt.Dispose();
+			}
+
+			//	#####
+			//	Neue Prozesse mit neuen Timer hinzufügen
+			//	#####
+			//	Liste mit Instanzen des zu überwachenden Prozess
+			List<Process> PS = new List<Process>();
+			PS.AddRange(Process.GetProcessesByName(processToWatch));
+			
+			if (PS.Count > 0) 
+			{
+				var n = PS.Select(p => p.Id).Except(psTimer.Select(t => t.processID));
+				foreach(var z in n)
+				{
+					Debug.WriteLine("PID2 noch nicht in der liste: " + z);
+					
+					clsProcessTimer cpt = new clsProcessTimer(z, clsProcessTimer.enumIntervallState.normalInterval);
+					psTimer.Add(cpt);
+					cpt.Tick += timerTick;
+					cpt.Enabled = true;
+				}
+			}
+			else
+			{
+				//TODO:	Alle Timer Freigeben. Es ist kein Prozess mehr vorhanden
+			}
+			
+			PS = null;
+			//	#####
+		}
+		
 		/// <summary>
 		/// Liest die Liste der Hosts aus der angegebenen Text Datei ein
 		/// Die Liste ist Zeilenorientiert
@@ -480,9 +550,21 @@ namespace MemoryMonitor
 		{
 			if (cmdStack.Count > 0) {
 				//for(int i = cmdStack.Count; i > 0; i--)
+				int i = 0;
 				while(cmdStack.Count > 0)
 				{
 					Debug.WriteLine(string.Format("{0}: " + cmdStack.Pop(), i), "Command in Stack");
+					i++;
+					/*
+					 * Timer Start			= 		Starten der Timer
+					 * Timer Stop			= 		Stoppen der aller Timer
+					 * Timer Intervall [Normal|Warnung|Critical] = Setzen der Timer Intervalle
+					 * Prozess [NAME]		= 		Setzen des Prozessnamen für Überwachung
+					 * LogPath				= 		Setzen des Logverzeichnisses
+					 * Screenshot			=		Auslösen eines Screenshots
+					 * Quit|Exit			= 		Beenden der Anwendung
+					 * 
+					 */
 				}
 			}
 		}
