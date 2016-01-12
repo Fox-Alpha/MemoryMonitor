@@ -561,7 +561,8 @@ namespace MemoryMonitor
 				string strTempCmd;
 				while(cmdStack.Count > 0)
 				{
-					Debug.WriteLine(string.Format("{0}: " + cmdStack.Pop(), i), "Command in Stack");
+					strTempCmd = cmdStack.Pop();
+					Debug.WriteLine(string.Format("{0}: " + strTempCmd, i), "Command in Stack");
 					i++;
 					/*
 					 * 
@@ -575,7 +576,6 @@ namespace MemoryMonitor
 					 * Quit|Exit			= 		Beenden der Anwendung
 					 * 
 					 */
-					strTempCmd = cmdStack.Pop();
 					
 					if(Regex.IsMatch(strTempCmd, "^(Timer|Prozess|Log|Screenshot|Quit|Exit)",RegexOptions.IgnoreCase | RegexOptions.Multiline))
 					{
