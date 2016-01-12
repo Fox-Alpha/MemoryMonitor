@@ -55,7 +55,12 @@ namespace MemoryMonitor
 //		private string csvLogFile = "";
 		private string commandFile = "c:\\temp\\MemUsageLog\\command.file";
 		
-		private string processToWatch = "JM4";
+		private string _processToWatch = "JM4";
+
+		public string processToWatch {
+			get { return _processToWatch; }
+			set { _processToWatch = value; }
+		}
 		
 		string protokollSavePath = @"c:\temp\MemUsageLog\";
 		string protokollFileNamePrefix = @"MemLog";
@@ -559,7 +564,8 @@ namespace MemoryMonitor
 					 * Timer Start			= 		Starten der Timer
 					 * Timer Stop			= 		Stoppen der aller Timer
 					 * Timer Intervall [Normal|Warnung|Critical] = Setzen der Timer Intervalle
-					 * Prozess [NAME]		= 		Setzen des Prozessnamen für Überwachung
+					 * Timer Reset			=		Alle Timer auf Default Werte zurücksetzen. Stoppen und erneut starten.
+					 * Prozess [ADD|RESET|REMOVE][NAME]		= 		Setzen des Prozessnamen für Überwachung, reinizialisieren der Timer
 					 * LogPath				= 		Setzen des Logverzeichnisses
 					 * Screenshot			=		Auslösen eines Screenshots
 					 * Quit|Exit			= 		Beenden der Anwendung
@@ -567,6 +573,59 @@ namespace MemoryMonitor
 					 */
 				}
 			}
+		}
+		
+		/// <summary>
+		/// Command zum steuern der Timer Funktionen
+		/// </summary>
+		/// <param name="strCommand"></param>
+		/// <returns></returns>
+		bool execCommandTimer(string strCommand)
+		{
+			
+		}
+		
+		/// <summary>
+		/// Command zum steuern der Überwachten Prozesse
+		/// Add: Einen weiteren Prozess der Überwachung hinzufügen
+		/// Reset: Alle Timer zurücksetzen
+		/// Remove: Einen Prozess aus der Überwachung entfernen
+		/// </summary>
+		/// <param name="strCommand"></param>
+		/// <returns></returns>
+		bool execCommandProcess(string strCommand)
+		{
+			
+		}
+		
+		/// <summary>
+		/// Command zum Steuern der Log Funktionen
+		/// </summary>
+		/// <param name="strCommand"></param>
+		/// <returns></returns>
+		bool execCommandLog(string strCommand)
+		{
+			
+		}
+
+		/// <summary>
+		/// Command zum steuern der Screenshot Funktion
+		/// </summary>
+		/// <param name="strCommand"></param>
+		/// <returns></returns>
+		bool execCommandScreenshot(string strCommand)
+		{
+			
+		}
+
+		/// <summary>
+		/// Command zum beenden der Anwendung
+		/// </summary>
+		/// <param name="strCommand"></param>
+		/// <returns></returns>
+		bool execCommandQuit(string strCommand)
+		{
+			
 		}
 		#endregion
 	}
