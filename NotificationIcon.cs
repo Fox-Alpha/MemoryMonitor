@@ -571,6 +571,7 @@ namespace MemoryMonitor
 					 * Timer Intervall [Normal|Warnung|Critical] = Setzen der Timer Intervalle
 					 * Timer Reset			=		Alle Timer auf Default Werte zurücksetzen. Stoppen und erneut starten.
 					 * Prozess [ADD|RESET|REMOVE][NAME]		= 		Setzen des Prozessnamen für Überwachung, reinizialisieren der Timer
+					 * Prozess Status		= 		Schreiben einer Datei mit allen Metadaten zur Prozessüberwachung
 					 * Log Path				= 		Setzen des Logverzeichnisses
 					 * Screenshot			=		Auslösen eines Screenshots
 					 * Quit|Exit			= 		Beenden der Anwendung
@@ -609,6 +610,14 @@ namespace MemoryMonitor
 		/// <returns></returns>
 		bool execCommandTimer(string strCommand)
 		{
+			/*
+			 * 
+			 * Timer Start			= 		Starten der Timer
+			 * Timer Stop			= 		Stoppen der aller Timer
+			 * Timer Intervall [Normal|Warnung|Critical] = Setzen der Timer Intervalle
+			 * Timer Reset			=		Alle Timer auf Default Werte zurücksetzen. Stoppen und erneut starten.
+			 * 
+			 */
 			Debug.WriteLine("Command eingelesen: " + strCommand, "execCommandTimer()");
 			return true;
 		}
@@ -623,6 +632,11 @@ namespace MemoryMonitor
 		/// <returns></returns>
 		bool execCommandProcess(string strCommand)
 		{
+			/*
+			 * Prozess [ADD|RESET|REMOVE][NAME]		= 		Setzen des Prozessnamen für Überwachung, reinizialisieren der Timer
+			 * Prozess Status		= 		Schreiben einer Datei mit allen Metadaten zur Prozessüberwachung
+			 * 
+			 */
 			Debug.WriteLine("Command eingelesen: " + strCommand, "execCommandProcess()");
 			return true;
 		}
@@ -634,6 +648,11 @@ namespace MemoryMonitor
 		/// <returns></returns>
 		bool execCommandLog(string strCommand)
 		{
+			/*
+			 * 
+			 * Log Path				= 		Setzen des Logverzeichnisses
+			 * 
+			 */
 			Debug.WriteLine("Command eingelesen: " + strCommand, "execCommandLog()");
 			return true;
 		}
@@ -645,6 +664,9 @@ namespace MemoryMonitor
 		/// <returns></returns>
 		bool execCommandScreenshot(string strCommand)
 		{
+			/*
+			 * Screenshot			=		Auslösen eines Screenshots
+			 */
 			Debug.WriteLine("Command eingelesen: " + strCommand, "execCommandScreenshot()");
 			return true;
 		}
@@ -656,6 +678,11 @@ namespace MemoryMonitor
 		/// <returns></returns>
 		bool execCommandQuit(string strCommand)
 		{
+			/*
+			 * 
+			 * Quit|Exit			= 		Beenden der Anwendung
+			 * 
+			 */
 			Debug.WriteLine("Command eingelesen: " + strCommand, "execCommandQuit()");
 			return true;
 		}
