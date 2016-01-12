@@ -83,6 +83,13 @@ namespace MemoryMonitor.Klassen
 			private set { setProcessID(value); }
 		}
 		
+		bool _obsolete = false;
+		
+		public bool obsolete {
+			get { return _obsolete; }
+			set { _obsolete = value; }
+		}
+		
 		#endregion
 		
 		#region ctor
@@ -161,6 +168,7 @@ namespace MemoryMonitor.Klassen
 			else		//	Falls Value <= 0
 			{
 				_processID = 0;
+				Enabled = false;
 				return;	
 			}
 		}
