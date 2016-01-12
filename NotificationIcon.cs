@@ -55,6 +55,8 @@ namespace MemoryMonitor
 //		private string csvLogFile = "";
 		private string commandFile = "c:\\temp\\MemUsageLog\\command.file";
 		
+		//TODO: Eigenschaft als Liste erstellen.
+		// Um auch mehere Anwendung unabhängig überwachen zu können
 		private string _processToWatch = "JM4";
 
 		public string processToWatch {
@@ -556,21 +558,46 @@ namespace MemoryMonitor
 			if (cmdStack.Count > 0) {
 				//for(int i = cmdStack.Count; i > 0; i--)
 				int i = 0;
+				string strTempCmd;
 				while(cmdStack.Count > 0)
 				{
 					Debug.WriteLine(string.Format("{0}: " + cmdStack.Pop(), i), "Command in Stack");
 					i++;
 					/*
+					 * 
 					 * Timer Start			= 		Starten der Timer
 					 * Timer Stop			= 		Stoppen der aller Timer
 					 * Timer Intervall [Normal|Warnung|Critical] = Setzen der Timer Intervalle
 					 * Timer Reset			=		Alle Timer auf Default Werte zurücksetzen. Stoppen und erneut starten.
 					 * Prozess [ADD|RESET|REMOVE][NAME]		= 		Setzen des Prozessnamen für Überwachung, reinizialisieren der Timer
-					 * LogPath				= 		Setzen des Logverzeichnisses
+					 * Log Path				= 		Setzen des Logverzeichnisses
 					 * Screenshot			=		Auslösen eines Screenshots
 					 * Quit|Exit			= 		Beenden der Anwendung
 					 * 
 					 */
+					strTempCmd = cmdStack.Pop();
+					
+					if(Regex.IsMatch(strTempCmd, "^(Timer|Prozess|Log|Screenshot|Quit|Exit)",RegexOptions.IgnoreCase | RegexOptions.Multiline))
+					{
+						if (strTempCmd.StartsWith("Timer", StringComparison.CurrentCulture)) {
+							execCommandTimer(strTempCmd);
+						}
+						if (strTempCmd.StartsWith("Prozess", StringComparison.CurrentCulture)) {
+							execCommandProcess(strTempCmd);
+						}
+						if (strTempCmd.StartsWith("Log", StringComparison.CurrentCulture)) {
+							execCommandLog(strTempCmd);
+						}
+						if (strTempCmd.StartsWith("Screenshot", StringComparison.CurrentCulture)) {
+							execCommandScreenshot(strTempCmd);
+						}
+						if (strTempCmd.StartsWith("Exit", StringComparison.CurrentCulture)) {
+							execCommandQuit(strTempCmd);
+						}
+						if (strTempCmd.StartsWith("Quit", StringComparison.CurrentCulture)) {
+							execCommandQuit(strTempCmd);
+						}
+					}
 				}
 			}
 		}
@@ -582,7 +609,8 @@ namespace MemoryMonitor
 		/// <returns></returns>
 		bool execCommandTimer(string strCommand)
 		{
-			
+			Debug.WriteLine("Command eingelesen: " + strCommand, "execCommandTimer()");
+			return true;
 		}
 		
 		/// <summary>
@@ -595,7 +623,8 @@ namespace MemoryMonitor
 		/// <returns></returns>
 		bool execCommandProcess(string strCommand)
 		{
-			
+			Debug.WriteLine("Command eingelesen: " + strCommand, "execCommandProcess()");
+			return true;
 		}
 		
 		/// <summary>
@@ -605,7 +634,8 @@ namespace MemoryMonitor
 		/// <returns></returns>
 		bool execCommandLog(string strCommand)
 		{
-			
+			Debug.WriteLine("Command eingelesen: " + strCommand, "execCommandLog()");
+			return true;
 		}
 
 		/// <summary>
@@ -615,7 +645,8 @@ namespace MemoryMonitor
 		/// <returns></returns>
 		bool execCommandScreenshot(string strCommand)
 		{
-			
+			Debug.WriteLine("Command eingelesen: " + strCommand, "execCommandScreenshot()");
+			return true;
 		}
 
 		/// <summary>
@@ -625,7 +656,8 @@ namespace MemoryMonitor
 		/// <returns></returns>
 		bool execCommandQuit(string strCommand)
 		{
-			
+			Debug.WriteLine("Command eingelesen: " + strCommand, "execCommandQuit()");
+			return true;
 		}
 		#endregion
 	}
