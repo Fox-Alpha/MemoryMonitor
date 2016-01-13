@@ -506,6 +506,12 @@ namespace MemoryMonitor
         //	Gibt nur den Wert eines Parameters zurück
         string ParseCmdLineParam(string key, string cmdline, out bool hasValue)
 		{
+        	/*
+        	 * TODO:
+        	 * 1. Was ist wenn ein Parameterwert '-' oder ' -' enthält ?
+        	 * 2. Was ist wenn ein Parameterwert mit " eingeshlossen ist ?
+        	 * 
+        	 */
         	hasValue = false;
 			string res = "";
 			try
@@ -539,8 +545,8 @@ namespace MemoryMonitor
 					start += key.Length+1;
 					hasValue = true;
 				}
-				else				
-					start += key.Length;
+//				else				
+//					start += key.Length;
 				
 				//Position des nächsten Parameters ermitteln
 				if(cmdline.Length > start)
@@ -556,7 +562,7 @@ namespace MemoryMonitor
 				{
 					length = cmdline.Length-start;
 				}
-				if(length > 0)
+				if(length >= 0)
 					res = cmdline.Substring(start, length);
 				
 			} 
@@ -603,7 +609,7 @@ namespace MemoryMonitor
 			
 			if (File.Exists(commandFile)) {
 				FileInfo fi = new FileInfo(commandFile);
-				Stack<string> commandStack = new Stack<string>();
+				Queue<string> commandStack = new Queue<string>();
 				
 				if (fi.Length > 0) {
 					Debug.WriteLine(string.Format("{0} Datei wurde geändert, Command Wait", DateTime.Now.ToString()), "readCommandFromFile() - Change");
@@ -611,7 +617,7 @@ namespace MemoryMonitor
 					foreach(string cmd in File.ReadLines(commandFile))
 					{
 						if (!string.IsNullOrEmpty(cmd)) {
-							commandStack.Push(cmd);
+							commandStack.Enqueue(cmd);
 						}
 					}
 					executeCommandsFromFile(commandStack);
@@ -629,7 +635,7 @@ namespace MemoryMonitor
 			}
 		}
 		
-		void executeCommandsFromFile(Stack<string> cmdStack)
+		void executeCommandsFromFile(Queue<string> cmdStack)
 		{
 			if (cmdStack.Count > 0) {
 				//for(int i = cmdStack.Count; i > 0; i--)
@@ -637,7 +643,7 @@ namespace MemoryMonitor
 				string strTempCmd;
 				while(cmdStack.Count > 0)
 				{
-					strTempCmd = cmdStack.Pop();
+					strTempCmd = cmdStack.Dequeue();
 					Debug.WriteLine(string.Format("{0}: " + strTempCmd, i), "Command in Stack");
 					i++;
 					/*
@@ -695,40 +701,66 @@ namespace MemoryMonitor
 			 * 
 			 */
 			
-			//Dictionary<string, string> dicCmd = new Dictionary<string, string>()
-			List<string> cmds = new List<string>() {"START", "STOP", "INTERVALL", "RESET"};
+			Dictionary<string, string> dicCmd = new Dictionary<string, string>();
+			List<string> cmds = new List<string>() {"START", "STOP", "INTERVAL", "RESET"};
+			bool hasValue;
+			string tmp = "";
+			string key = "";
 			
 			//foreach (string key in dicCmd.Keys)
 			for(int i = 0; i < cmds.Count; i++)
 			{
-				bool hasValue;
-				string tmp = "";
-				string key = cmds[i];
-				if((tmp = ParseCmdLineParam(key, strCommand, out hasValue)) != string.Empty)
+				key = cmds[i];
+				if((tmp = ParseCmdLineParam(key, strCommand, out hasValue)) != string.Empty) 
 				{
-					switch (tmp) 
+					switch (key.ToUpper())
 					{
 						case "START":
-							
+							dicCmd.Add(key, tmp);
+							tmp = ParseCmdLineParam("PID", strCommand, out hasValue);
+							if(hasValue && tmp != string.Empty)
+							{
+								dicCmd.Add("PID", tmp);
+							}
 							break;
 						
 						case "STOP":
-							
+							dicCmd.Add(key, tmp);
+							tmp = ParseCmdLineParam("PID", strCommand, out hasValue);
+							if(hasValue && tmp != string.Empty)
+							{
+								dicCmd.Add("PID", tmp);
+							}
 							break;
 						
-						case "INTERVALL":
-							
+						case "INTERVAL":
+							dicCmd.Add(key, tmp);
+							tmp = ParseCmdLineParam("PID", strCommand, out hasValue);
+							if(hasValue && tmp != string.Empty)
+							{
+								dicCmd.Add("PID", tmp);
+							}
 							break;
 						
 						case "RESET":
-							
+							dicCmd.Add(key, tmp);
+							tmp = ParseCmdLineParam("PID", strCommand, out hasValue);
+							if(hasValue && tmp != string.Empty)
+							{
+								dicCmd.Add("PID", tmp);
+							}
 							break;
-						
 					}
 				}
+				Debug.WriteLine("Command eingelesen: " + strCommand, "execCommandTimer()");
 			}
 			
-			Debug.WriteLine("Command eingelesen: " + strCommand, "execCommandTimer()");
+			
+			foreach (var element in dicCmd) {
+				Debug.WriteLine(element.Key + "=" + element.Value, "ParameterTimer():Key=Value");
+			}
+			
+			
 			return true;
 		}
 		
