@@ -53,8 +53,23 @@ namespace MemoryMonitor
 		Dictionary<string, string> alias = new Dictionary<string, string>();
 		
 //		private string csvLogFile = "";
-		private string commandFile = "c:\\temp\\MemUsageLog\\command.file";
+		private string _commandFile = "c:\\temp\\MemUsageLog\\command.file";
+		private string _commandResultFile = "c:\\temp\\MemUsageLog\\command.result";
+		private string _commandStatusFile = "c:\\temp\\MemUsageLog\\command.status";
 		
+		public string commandFile {
+			get { return _commandFile; }
+			private set { _commandFile = value; }
+		}
+		public string commandResultFile {
+			get { return _commandResultFile; }
+			private set { _commandResultFile = value; }
+		}
+		public string commandStatusFile {
+			get { return _commandStatusFile; }
+			private set { _commandStatusFile = value; }
+		}
+
 		//TODO: Eigenschaft als Liste erstellen.
 		// Um auch mehere Anwendung unabhängig überwachen zu können
 		private string _processToWatch = "JM4";
@@ -701,7 +716,7 @@ namespace MemoryMonitor
 			 * 
 			 */
 			
-			Dictionary<string, string> dicCmd = new Dictionary<string, string>();
+			Dictionary<string, object> dicCmd = new Dictionary<string, object>();
 			List<string> cmds = new List<string>() {"START", "STOP", "INTERVAL", "RESET"};
 			bool hasValue;
 			string tmp = "";
@@ -720,7 +735,9 @@ namespace MemoryMonitor
 							tmp = ParseCmdLineParam("PID", strCommand, out hasValue);
 							if(hasValue && tmp != string.Empty)
 							{
-								dicCmd.Add("PID", tmp);
+								int iPid = 0;
+								if(int.TryParse(tmp, out iPid))
+									dicCmd.Add("PID", iPid);
 							}
 							break;
 						
