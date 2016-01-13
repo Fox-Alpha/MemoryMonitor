@@ -662,22 +662,22 @@ namespace MemoryMonitor
 					
 					if(Regex.IsMatch(strTempCmd, "^(Timer|Prozess|Log|Screenshot|Quit|Exit)",RegexOptions.IgnoreCase | RegexOptions.Multiline))
 					{
-						if (strTempCmd.StartsWith("Timer", StringComparison.CurrentCulture)) {
+						if (strTempCmd.ToLower().StartsWith("Timer".ToLower(), StringComparison.CurrentCulture)) {
 							execCommandTimer(strTempCmd);
 						}
-						if (strTempCmd.StartsWith("Prozess", StringComparison.CurrentCulture)) {
+						if (strTempCmd.ToLower().StartsWith("Prozess".ToLower(), StringComparison.CurrentCulture)) {
 							execCommandProcess(strTempCmd);
 						}
-						if (strTempCmd.StartsWith("Log", StringComparison.CurrentCulture)) {
+						if (strTempCmd.ToLower().StartsWith("Log".ToLower(), StringComparison.CurrentCulture)) {
 							execCommandLog(strTempCmd);
 						}
-						if (strTempCmd.StartsWith("Screenshot", StringComparison.CurrentCulture)) {
+						if (strTempCmd.ToLower().StartsWith("Screenshot".ToLower(), StringComparison.CurrentCulture)) {
 							execCommandScreenshot(strTempCmd);
 						}
-						if (strTempCmd.StartsWith("Exit", StringComparison.CurrentCulture)) {
+						if (strTempCmd.ToLower().StartsWith("Exit".ToLower(), StringComparison.CurrentCulture)) {
 							execCommandQuit(strTempCmd);
 						}
-						if (strTempCmd.StartsWith("Quit", StringComparison.CurrentCulture)) {
+						if (strTempCmd.ToLower().StartsWith("Quit".ToLower(), StringComparison.CurrentCulture)) {
 							execCommandQuit(strTempCmd);
 						}
 					}
