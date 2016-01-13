@@ -490,6 +490,72 @@ namespace MemoryMonitor
 			return false;
 		}
 
+        /// <summary>
+        /// Auslesen der Parameter aus dem Kommandozeilen Aufruf
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="cmdline"></param>
+        /// <returns></returns>
+        string ParseCmdLineParam(string key, string cmdline)
+		{
+			string res = "";
+			try
+			{
+				int end = 0;
+				int start = 0;
+				int pos = 0;
+				
+				//	Ersetzem von Anführungszeichen in der Parameterliste
+				cmdline = Regex.Replace(cmdline, "\"", "");
+
+                //  Start auf ersten Parameter beginnend mit ' -' setzen
+                if ((pos = cmdline.IndexOf(" -", start, StringComparison.CurrentCulture)) > -1)
+                {
+                    start = cmdline.IndexOf(" -", start, StringComparison.CurrentCulture);
+                    cmdline = cmdline.Substring(start, cmdline.Length - start);
+                }
+                else
+                    return string.Empty;
+
+                //Wenn Key nicht gefunden wurde, dann beenden.
+                if ((start = cmdline.ToLower().IndexOf(key.ToLower(), StringComparison.CurrentCulture)) <= 0)
+					return string.Empty;
+				
+				if (cmdline.Length == start+key.Length)
+					return cmdline.Substring(start, cmdline.Length-start);
+				
+				//prüfen ob dem Parameter ein Wert mit '=' angehängt ist
+				if (cmdline[start+key.Length] == '=') {
+					//Start hinter das '=' setzten
+					start += key.Length+1;
+				}
+				else				
+					start += key.Length;
+				
+				//Position des nächsten Parameters ermitteln
+				if(cmdline.Length > start)
+					end = cmdline.IndexOf(" -", start, StringComparison.CurrentCulture);
+
+				int length = 0;
+				
+				if (end > 0)
+				{
+					length = end-start;
+				} 
+				else 
+				{
+					length = cmdline.Length-start;
+				}
+				if(length > 0)
+					res = cmdline.Substring(start, length);
+				
+			} 
+			catch (System.Exception ex)
+			{
+				Debug.WriteLine(ex.Message);
+			}
+			return res;
+		}
 		#endregion
 		
 		#region SystemFilewatcherEvents
@@ -618,6 +684,27 @@ namespace MemoryMonitor
 			 * Timer Reset			=		Alle Timer auf Default Werte zurücksetzen. Stoppen und erneut starten.
 			 * 
 			 */
+			
+			Dictionary<string, string> dicCmd = new Dictionary<string, string>() {
+													{"START", ""},
+													{"STOP", ""},
+													{"INTERVALL", ""},
+													{"RESET", ""},
+												};
+			
+			//foreach (string key in dicCmd.Keys)
+			for(int i = 0; i < dicCmd.Count; i++)
+			{
+				string tmp = "";
+				string key = dicCmd.Keys[i];
+				if((tmp = ParseCmdLineParam(key, strCommand)) != string.Empty)
+				{
+					
+					dicCmd[key] = tmp;
+					//dicCmd.va.Add(key, tmp);
+				}
+			}
+			
 			Debug.WriteLine("Command eingelesen: " + strCommand, "execCommandTimer()");
 			return true;
 		}
@@ -637,6 +724,13 @@ namespace MemoryMonitor
 			 * Prozess Status		= 		Schreiben einer Datei mit allen Metadaten zur Prozessüberwachung
 			 * 
 			 */
+			
+			Dictionary<string, string> dicCmd = new Dictionary<string, string>() {
+													{"ADD", ""},
+													{"REMOVE", ""},
+													{"RESET", ""},
+												};
+			
 			Debug.WriteLine("Command eingelesen: " + strCommand, "execCommandProcess()");
 			return true;
 		}
@@ -653,6 +747,10 @@ namespace MemoryMonitor
 			 * Log Path				= 		Setzen des Logverzeichnisses
 			 * 
 			 */
+			Dictionary<string, string> dicCmd = new Dictionary<string, string>() {
+													{"LOG", ""},
+												};
+			
 			Debug.WriteLine("Command eingelesen: " + strCommand, "execCommandLog()");
 			return true;
 		}
@@ -667,6 +765,11 @@ namespace MemoryMonitor
 			/*
 			 * Screenshot			=		Auslösen eines Screenshots
 			 */
+			
+			Dictionary<string, string> dicCmd = new Dictionary<string, string>() {
+													{"SCREENSHOT", ""},
+												};
+			
 			Debug.WriteLine("Command eingelesen: " + strCommand, "execCommandScreenshot()");
 			return true;
 		}
@@ -684,6 +787,12 @@ namespace MemoryMonitor
 			 * 
 			 */
 			Debug.WriteLine("Command eingelesen: " + strCommand, "execCommandQuit()");
+			if (psTimer.Count > 0) {
+				foreach (var ps in psTimer) {
+					ps.Stop();
+				}
+			}
+			Application.Exit();
 			return true;
 		}
 		#endregion
