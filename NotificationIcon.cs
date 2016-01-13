@@ -29,6 +29,7 @@ namespace MemoryMonitor
 {
 	public sealed class NotificationIcon
 	{
+		#region Eigenschaften
 		private NotifyIcon notifyIcon;
 		private ContextMenu notificationMenu;
 		private bool bBallonTipShowing;
@@ -72,33 +73,46 @@ namespace MemoryMonitor
 
 		//TODO: Eigenschaft als Liste erstellen.
 		// Um auch mehere Anwendung unabhängig überwachen zu können
-		private string _processToWatch = "JM4";
+		private List<string> _ProcessListToWatch;
+		private string _processToWatch = string.Empty;
 
 		public string processToWatch {
 			get { return _processToWatch; }
-			set { _processToWatch = value; }
+			private set { 
+				//_processToWatch = value;
+				if (!string.IsNullOrWhiteSpace(value)) {
+					if (!_ProcessListToWatch.Contains(value)) {
+						_ProcessListToWatch.Add(value);
+					}
+				}				
+			}
 		}
 		
 		string protokollSavePath = @"c:\temp\MemUsageLog\";
 		string protokollFileNamePrefix = @"MemLog";
 		string protokollFileLogExt = "csv";
 		string protokollImageExt = "png";
-		
+		#endregion
+
 		#region Initialize icon and menu
 		public NotificationIcon()
 		{
 			notifyIcon = new NotifyIcon();
 			notificationMenu = new ContextMenu(InitializeMenu());
 			List<Process> ps = new List<Process>();
+			_ProcessListToWatch = new List<string>();
 			psTimer = new List<clsProcessTimer>();
 			m_Watcher = new FileSystemWatcher();
 			garbageTimer = new System.Windows.Forms.Timer();
 			
-			ps.AddRange(Process.GetProcessesByName(processToWatch));
-			for (int i = 0; i < ps.Count; i++) {
-				psTimer.Add(new clsProcessTimer(ps[i].Id, clsProcessTimer.enumIntervallState.normalInterval));
-				psTimer[i].Tick += timerTick;
-				psTimer[i].Enabled = true;
+			foreach(string str in _ProcessListToWatch)
+			{
+				ps.AddRange(Process.GetProcessesByName(str));
+				for (int i = 0; i < ps.Count; i++) {
+					psTimer.Add(new clsProcessTimer(ps[i].Id, clsProcessTimer.enumIntervallState.normalInterval));
+					psTimer[i].Tick += timerTick;
+					psTimer[i].Enabled = true;
+				}
 			}
 			garbageTimer.Interval = 6000;		//	Aufräumen der nicht benötigten Prozesstimer
 			garbageTimer.Tick += garbageTimerTick;
@@ -395,7 +409,9 @@ namespace MemoryMonitor
 			//	#####
 			//	Liste mit Instanzen des zu überwachenden Prozess
 			List<Process> PS = new List<Process>();
-			PS.AddRange(Process.GetProcessesByName(processToWatch));
+			foreach (string strToWatch in _ProcessListToWatch) {
+				PS.AddRange(Process.GetProcessesByName(strToWatch));
+			}
 			
 			if (PS.Count > 0) 
 			{
