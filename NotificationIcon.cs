@@ -490,14 +490,23 @@ namespace MemoryMonitor
 			return false;
 		}
 
-        /// <summary>
-        /// Auslesen der Parameter aus dem Kommandozeilen Aufruf
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="cmdline"></param>
-        /// <returns></returns>
-        string ParseCmdLineParam(string key, string cmdline)
+        /// <summary>Auslesen der Parameter aus dem Kommandozeilen Aufruf</summary>
+        /// 
+        /// <param name="key">Gesuchter Parameter</param>
+        /// <param name="cmdline">Parameterstring in dem nach <paramref name="key"/> gesucht werden soll</param>
+        /// <param name="value">Rückgabe falls ein Werte im Parameter vorhanden ist</param>
+        /// <returns>True wenn key enthalten ist</returns>
+        bool ParseCmdLineParamGetValue(string key, string cmdline, ref string value)
+        {
+        	bool hasValue;
+       		value = ParseCmdLineParam(key, cmdline, out hasValue);
+        	return hasValue;
+        }
+        
+        //	Gibt nur den Wert eines Parameters zurück
+        string ParseCmdLineParam(string key, string cmdline, out bool hasValue)
 		{
+        	hasValue = false;
 			string res = "";
 			try
 			{
@@ -528,6 +537,7 @@ namespace MemoryMonitor
 				if (cmdline[start+key.Length] == '=') {
 					//Start hinter das '=' setzten
 					start += key.Length+1;
+					hasValue = true;
 				}
 				else				
 					start += key.Length;
@@ -678,30 +688,43 @@ namespace MemoryMonitor
 		{
 			/*
 			 * 
-			 * Timer Start			= 		Starten der Timer
-			 * Timer Stop			= 		Stoppen der aller Timer
-			 * Timer Intervall [Normal|Warnung|Critical] = Setzen der Timer Intervalle
-			 * Timer Reset			=		Alle Timer auf Default Werte zurücksetzen. Stoppen und erneut starten.
+			 * Timer Start [PID]	= 		Starten der Timer
+			 * Timer Stop [PID]		= 		Stoppen der aller Timer
+			 * Timer Intervall [PID][Normal|Warnung|Critical] = Setzen der Timer Intervalle
+			 * Timer Reset [PID]	=		Alle Timer auf Default Werte zurücksetzen. Stoppen und erneut starten.
 			 * 
 			 */
 			
-			Dictionary<string, string> dicCmd = new Dictionary<string, string>() {
-													{"START", ""},
-													{"STOP", ""},
-													{"INTERVALL", ""},
-													{"RESET", ""},
-												};
+			//Dictionary<string, string> dicCmd = new Dictionary<string, string>()
+			List<string> cmds = new List<string>() {"START", "STOP", "INTERVALL", "RESET"};
 			
 			//foreach (string key in dicCmd.Keys)
-			for(int i = 0; i < dicCmd.Count; i++)
+			for(int i = 0; i < cmds.Count; i++)
 			{
+				bool hasValue;
 				string tmp = "";
-				string key = dicCmd.Keys[i];
-				if((tmp = ParseCmdLineParam(key, strCommand)) != string.Empty)
+				string key = cmds[i];
+				if((tmp = ParseCmdLineParam(key, strCommand, out hasValue)) != string.Empty)
 				{
-					
-					dicCmd[key] = tmp;
-					//dicCmd.va.Add(key, tmp);
+					switch (tmp) 
+					{
+						case "START":
+							
+							break;
+						
+						case "STOP":
+							
+							break;
+						
+						case "INTERVALL":
+							
+							break;
+						
+						case "RESET":
+							
+							break;
+						
+					}
 				}
 			}
 			
