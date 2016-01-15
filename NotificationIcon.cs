@@ -35,7 +35,6 @@ namespace MemoryMonitor
 		private ContextMenu notificationMenu;
 		private bool bBallonTipShowing;
 		private MainForm mainForm;
-//		private System.Windows.Forms.Timer garbageTimer;
 		private System.Timers.Timer garbageTimer;
 		
 		private List<clsProcessTimer> psTimer;
@@ -55,7 +54,6 @@ namespace MemoryMonitor
 		
 		Dictionary<string, string> alias = new Dictionary<string, string>();
 		
-//		private string csvLogFile = "";
 		private string _commandFile = "c:\\temp\\MemUsageLog\\command.file";
 		private string _commandResultFile = "c:\\temp\\MemUsageLog\\command.result";
 		private string _commandStatusFile = "c:\\temp\\MemUsageLog\\command.status";
@@ -73,7 +71,7 @@ namespace MemoryMonitor
 			private set { _commandStatusFile = value; }
 		}
 
-		//TODO: Eigenschaft als Liste erstellen.
+		// Eigenschaft als Liste erstellen.
 		// Um auch mehere Anwendung unabhängig überwachen zu können
 		private List<string> _ProcessListToWatch;
 		private string _processToWatch = string.Empty;
@@ -81,7 +79,6 @@ namespace MemoryMonitor
 		public string processToWatch {
 			get { return _processToWatch; }
 			private set { 
-				//_processToWatch = value;
 				if (!string.IsNullOrWhiteSpace(value)) {
 					if (!_ProcessListToWatch.Contains(value)) {
 						_ProcessListToWatch.Add(value);
@@ -109,23 +106,27 @@ namespace MemoryMonitor
 			
 			processToWatch = "JM4";
 			
+			//	####
+			//	Timer per Default für JobManager erstellen
+			//	####
 			foreach(string str in _ProcessListToWatch)
 			{
 				ps.AddRange(Process.GetProcessesByName(str));
 				for (int i = 0; i < ps.Count; i++) {
 					psTimer.Add(new clsProcessTimer(ps[i].Id, clsProcessTimer.enumIntervallState.normalInterval));
-//					psTimer[i].Tick += timerTick;
 					psTimer[i].Elapsed += timerTick;
-//					psTimer[i].Start();
 					psTimer[i].Enabled = true;
 				}
 			}
-			garbageTimer.Interval = 6000;		//	Aufräumen der nicht benötigten Prozesstimer
-//			garbageTimer.Tick += garbageTimerTick;
-			garbageTimer.Elapsed += garbageTimerTick;
-//			garbageTimer.Start();
-			garbageTimer.Enabled = true;
+			//	####
 			
+			//	####
+			//	Aufräumen der nicht benötigten Prozesstimer
+			//	####
+			garbageTimer.Interval = 6000;
+			garbageTimer.Elapsed += garbageTimerTick;
+			garbageTimer.Enabled = true;
+			//	####
 			
 			notifyIcon.BalloonTipShown += iconShowBallonToolTip;
 			notifyIcon.BalloonTipClosed += iconCloseBallonToolTip;
@@ -133,7 +134,7 @@ namespace MemoryMonitor
 			
 			notifyIcon.DoubleClick += IconDoubleClick;
 			notifyIcon.MouseMove += IconMouseOver;
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(NotificationIcon));
+			ComponentResourceManager resources = new ComponentResourceManager(typeof(NotificationIcon));
 			notifyIcon.Icon = (Icon)resources.GetObject("$this.Icon");
 			notifyIcon.ContextMenu = notificationMenu;
 			
@@ -142,16 +143,10 @@ namespace MemoryMonitor
 			#region systemfilewatcher
 			m_Watcher.Path = "c:\\temp\\MemUsageLog\\";
 			m_Watcher.Filter = "command.file";
-			m_Watcher.NotifyFilter = 
-//						NotifyFilters.LastAccess |
-//                        NotifyFilters.LastWrite | 
-//                        NotifyFilters.FileName | 
-						NotifyFilters.Size 
-//						NotifyFilters.Attributes |
-//						NotifyFilters.CreationTime |
-//						NotifyFilters.Security |
-//                        NotifyFilters.DirectoryName
-				;
+			m_Watcher.NotifyFilter = NotifyFilters.Size;
+//						NotifyFilters.LastAccess | NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.Attributes |
+//						NotifyFilters.CreationTime | NotifyFilters.Security | NotifyFilters.DirectoryName
+
 			m_Watcher.IncludeSubdirectories = false;
 			
 			m_Watcher.Changed += new FileSystemEventHandler(OnChanged);
@@ -165,7 +160,6 @@ namespace MemoryMonitor
 		
 		void IconMouseOver(object sender, EventArgs e)
 		{
-//			notifyIcon.Text = "Mouseoverevent()";
 			if (!bBallonTipShowing) {
 				notifyIcon.BalloonTipText = "Überwacht den Speicherverbrauch einer Anwendung und erstellt einen Screenshot bei überschreitung eines bestimmten Wertes";
 				notifyIcon.BalloonTipTitle = "MemoryMonitor";
@@ -243,12 +237,10 @@ namespace MemoryMonitor
 			mainForm = new MainForm();
 			mainForm.Show();
 			mainForm.Location = new Point(Screen.PrimaryScreen.WorkingArea.Width - mainForm.Width - 5, Screen.PrimaryScreen.WorkingArea.Height - mainForm.Height - 5);
-//			MessageBox.Show("About This Application");
 		}
 		
 		private void menuExitClick(object sender, EventArgs e)
 		{
-			//timer.Enabled = false;
 			if (psTimer.Count > 0) {
 				foreach (clsProcessTimer pcstimer in psTimer) {
 					pcstimer.Enabled = false;
@@ -268,19 +260,20 @@ namespace MemoryMonitor
 		void timerTick(object sender, EventArgs e)
 		{
 			Debug.WriteLine("##### Start #####", "timerTick()");
-//			List<Process> ps = new List<Process>();
-//			ps.AddRange(Process.GetProcessesByName("JM4"));
 			Process pcs = null;;
 			
 			
 			if ((sender as clsProcessTimer) != null)
 			{
 				int psID = 0;
-				//pcs = Process.GetProcessById(((clsProcessTimer)sender).processID);
-				try {
+
+				try 
+				{
 					psID = ((clsProcessTimer)sender).processID;
 					pcs = Process.GetProcessById(psID);
-				} catch (ArgumentException ae) {
+				} 
+				catch (ArgumentException ae) 
+				{
 					
 					Debug.WriteLine("Die ProzessID " + psID + " konnte nicht gefunden werden!\r\n" + ae.Message, "TimerTick()");
 				}
@@ -288,10 +281,9 @@ namespace MemoryMonitor
 			
 			string strCsv;
 			string fileName;
-//			Debug.WriteLine("##### Start #####", "timerTick()");
-			if (pcs != null) 
+
+			if (pcs != null)
 			{
-//				Debug.WriteLine("#####, "timerTick()");
 				fileName = checkFileName(0, pcs.ProcessName, pcs.Id);
 				Debug.WriteLine(string.Format("PID: {0} | Name: {1} | Time: {2}| CurrentMem: {3}| PeakMem: {4}", pcs.Id, pcs.ProcessName, DateTime.Now.ToString(), pcs.PrivateMemorySize64.ToString(), pcs.PeakWorkingSet64), "TimerTick()");
 				strCsv = string.Format("{0};\"{1}\";\"{2}\";{3};{4}\r\n", DateTime.Now.ToString("HH:mm:ss"), pcs.Id, pcs.ProcessName, pcs.PrivateMemorySize64.ToString(), pcs.PeakWorkingSet64);
@@ -336,6 +328,9 @@ namespace MemoryMonitor
 		/// <returns>String generierter Dateiname</returns>
 		string checkFileName(int count, string suffix = "", int pid = 0, int filetype = 0)
 		{
+			//
+			//	TODO: Erstellen einer Eigenschaft für das Datumsformat
+			//
 			string strDate = DateTime.Now.ToString("yyyy-MM-dd");
 			//	#### Verzeichnis zum speichern bei bedarf anlegen
 			if (!Directory.Exists(protokollSavePath)) {
@@ -352,24 +347,18 @@ namespace MemoryMonitor
 			                                    protokollSavePath, 
 			                                    protokollFileNamePrefix, 
 			                                    suffix == string.Empty ? "" : suffix,
-			                                    strDate,//DateTime.Now.ToString("yyyyMMdd-HHmmss"), 
+			                                    strDate, 
 			                                    count > 0 ? "_"+count : "",
 			                                    filetype == 0 ? protokollFileLogExt : protokollImageExt,
 			                                    strDate,
 			                                    pid > 0 ? "_"+pid : ""
 			                                   );
 			//	####
-			
-//			if (!string.IsNullOrWhiteSpace("")) {
-//				
-//			}
 			return FullFileName;
 		}
 		
 		void getRemoteWMIData_WMILight()
 		{
-//			var wmiQuery = "Select * From Win32_Process";
-//			var wmiQuery = "Select Name,ProcessID,commandline,WorkingSetSize,peakWorkingSetSize From Win32_Process where Name = 'JM4.exe'";
 			var wmiQuery = "Select Name,ProcessID,creationdate,Caption,commandline,executablepath,WorkingSetSize,peakWorkingSetSize,OSName From Win32_Process where name = 'JM4.exe'";
 			var opt = new WmiConnectionOptions() { EnablePackageEncryption = true };
 			
@@ -436,7 +425,6 @@ namespace MemoryMonitor
 					
 					clsProcessTimer cpt = new clsProcessTimer(z, clsProcessTimer.enumIntervallState.normalInterval);
 					psTimer.Add(cpt);
-//					cpt.Tick += timerTick;
 					cpt.Elapsed += timerTick;
 					cpt.Enabled = true;
 				}
@@ -473,7 +461,6 @@ namespace MemoryMonitor
 			TextReader trHostList = null;
 			string strTmp = null;
 			List<string> hosts; 
-			//string[] alias;
 			
 			if (hostFileList == null) {
 				hostFileList = strHostFileList;
@@ -482,8 +469,8 @@ namespace MemoryMonitor
 			if (File.Exists(hostFileList)) 
 			{
 				hosts = new List<string>();
-//				clbRoutineListe.Items.Clear();
-				try 
+
+				try
 				{
 					if (alias.Count > 0) {
 						alias.Clear();
@@ -507,14 +494,7 @@ namespace MemoryMonitor
 										hosts.Add(strTmp);
 								}
 							}
-//							else
-//								strHostGroup = strTmp;								
 						}
-						
-//						if (hosts.Count>0) {
-//							clbRoutineListe.Items.Clear();
-//							clbRoutineListe.Items.AddRange(hosts.ToArray());
-//						}
 					}
 				} 
 				#region exception				
@@ -694,9 +674,9 @@ namespace MemoryMonitor
 		void executeCommandsFromFile(Queue<string> cmdStack)
 		{
 			if (cmdStack.Count > 0) {
-				//for(int i = cmdStack.Count; i > 0; i--)
 				int i = 0;
 				string strTempCmd;
+
 				while(cmdStack.Count > 0)
 				{
 					strTempCmd = cmdStack.Dequeue();
@@ -708,7 +688,7 @@ namespace MemoryMonitor
 					 * Timer Stop			= 		Stoppen der aller Timer
 					 * Timer Intervall [Normal|Warnung|Critical] = Setzen der Timer Intervalle
 					 * Timer Reset			=		Alle Timer auf Default Werte zurücksetzen. Stoppen und erneut starten.
-					 * Prozess [ADD|RESET|REMOVE][NAME]		= 		Setzen des Prozessnamen für Überwachung, reinizialisieren der Timer
+					 * Prozess [ADD|RESET|REMOVE][NAME|PID]		= 		Setzen des Prozessnamen für Überwachung, reinizialisieren der Timer
 					 * Prozess Status		= 		Schreiben einer Datei mit allen Metadaten zur Prozessüberwachung
 					 * Log Path				= 		Setzen des Logverzeichnisses
 					 * Screenshot			=		Auslösen eines Screenshots
@@ -763,7 +743,6 @@ namespace MemoryMonitor
 			string tmp = "";
 			string key = "";
 			
-			//foreach (string key in dicCmd.Keys)
 			for(int i = 0; i < cmds.Count; i++)
 			{
 				key = cmds[i];
@@ -837,18 +816,12 @@ namespace MemoryMonitor
 			 */
 			
 			Dictionary<string, object> dicCmd = new Dictionary<string, object>();
-//			{
-//				{"ADD", ""},
-//				{"REMOVE", ""},
-//				{"RESET", ""},
-//			};
 			
 			List<string> cmds = new List<string>() {"ADD", "REMOVE", "RESET"};
 			bool hasValue;
 			string tmp = "";
 			string key = "";
 			
-			//foreach (string key in dicCmd.Keys)
 			for(int i = 0; i < cmds.Count; i++)
 			{
 				key = cmds[i];
@@ -858,234 +831,254 @@ namespace MemoryMonitor
 					break;
 				}
 			}
-					//	#####
-					//	Aufsplitten der Parameter
-					//	#####
-					switch (key.ToUpper())
+			
+			//	#####
+			//	Aufsplitten der Parameter
+			//	#####
+			switch (key.ToUpper())
+			{
+				case "ADD":
+					dicCmd.Add(key, tmp);
+					tmp = ParseCmdLineParam("PID", strCommand, out hasValue);
+					if(hasValue && tmp != string.Empty)
 					{
-						case "ADD":
-							dicCmd.Add(key, tmp);
-							tmp = ParseCmdLineParam("PID", strCommand, out hasValue);
-							if(hasValue && tmp != string.Empty)
-							{
-								int iPid = 0;
-								if(int.TryParse(tmp, out iPid))
-									dicCmd.Add("PID", iPid);
-							}
-							tmp = ParseCmdLineParam("NAME", strCommand, out hasValue);
-							if(hasValue && tmp != string.Empty)
-							{
-								dicCmd.Add("NAME", tmp);
-							}
-
-							break;
-						
-						case "REMOVE":
-							dicCmd.Add(key, tmp);
-							tmp = ParseCmdLineParam("PID", strCommand, out hasValue);
-							if(hasValue && tmp != string.Empty)
-							{
-								int iPid = 0;
-								if(int.TryParse(tmp, out iPid))
-									dicCmd.Add("PID", iPid);
-							}
-							tmp = ParseCmdLineParam("NAME", strCommand, out hasValue);
-							if(hasValue && tmp != string.Empty)
-							{
-								dicCmd.Add("NAME", tmp);
-							}
-							break;
-						
-						case "RESET":
-							dicCmd.Add(key, tmp);
-							tmp = ParseCmdLineParam("PID", strCommand, out hasValue);
-							if(hasValue && tmp != string.Empty)
-							{
-								dicCmd.Add("PID", tmp);
-							}
-							break;
+						int iPid = 0;
+						if(int.TryParse(tmp, out iPid))
+							dicCmd.Add("PID", iPid);
 					}
-					//	#####
-
-
-
-					//	#####
-					//	Verarbeiten der Commandos
-					//	#####
-					object cmd, pid, name;
-					if (dicCmd.TryGetValue("ADD", out cmd)) 
+					tmp = ParseCmdLineParam("NAME", strCommand, out hasValue);
+					if(hasValue && tmp != string.Empty)
 					{
-						int PID;
-						string NAME = "";
-						clsProcessTimer pst;
-//						garbageTimer.Stop();
-						
-						
-						if(dicCmd.TryGetValue("PID", out pid))
-						{
-							PID = (int)pid;
-							Process ps = null;
-							
-							try {
-								ps = Process.GetProcessById(PID);
-								if (ps != null) {
-									garbageTimer.Enabled = false;
-									pst = new clsProcessTimer(ps.Id, clsProcessTimer.enumIntervallState.normalInterval);
-									psTimer.Add(pst);
-									processToWatch = ps.ProcessName;
-									//pst.Tick += timerTick;
-									pst.Elapsed += timerTick;
-									pst.Enabled = true;
-									garbageTimer.Enabled = true;
-									//pst.Start();
-									/*
-										clsProcessTimer cpt = new clsProcessTimer(z, clsProcessTimer.enumIntervallState.normalInterval);
-										psTimer.Add(cpt);
-										cpt.Tick += timerTick;
-										cpt.Enabled = true;
-									*/
-									Debug.WriteLine(string.Format("Neuen Prozess zur Überwachung hinzufügen: {0} / {1}",ps.ProcessName, ps.Id), "execCommandProcess():ADD|PID");
-								}
-							} catch (ArgumentException ae) {
-								
-								Debug.WriteLine("Error: AddProcess - Die Prozess ID: " + PID + " konnte nicht gefunden werden", "execCommandProcess():ADD|PID");
-								Debug.WriteLine(ae.Message, "execCommandProzess():ADD|NAME");
-							}
-						}
-						if(dicCmd.TryGetValue("NAME", out name))
-						{
-							NAME = name as string;
+						dicCmd.Add("NAME", tmp);
+					}
 
-							try {
-								foreach(Process pcs in Process.GetProcessesByName(NAME))
-								{
-									psTimer.Add(pst = new clsProcessTimer(pcs.Id));
-									processToWatch = pcs.ProcessName;
-//									pst.Tick += timerTick;
-									pst.Enabled = true;
-									pst.Elapsed += timerTick;
-									//pst.Start();
-									Debug.WriteLine(string.Format("Neuen Prozess zur Überwachung hinzufügen: {0} / {1}",pcs.ProcessName, pcs.Id), "execCommandProcess():ADD|NAME");
-								}
-							} catch (ArgumentException ae) {
-								
-								Debug.WriteLine("Error: AddProcess - Der Prozess mit dem Namen: " + NAME + " konnte nicht gefunden werden", "execCommandProzess():ADD|NAME");
-								Debug.WriteLine(ae.Message, "execCommandProzess():ADD|NAME");
-							}							
-						}
-					}
-					if (dicCmd.TryGetValue("REMOVE", out cmd)) {
-						int PID;
-						string NAME = "";
-						clsProcessTimer pst;
-						
-						if(dicCmd.TryGetValue("PID", out pid))
-						{
-							PID = (int)pid;
-							Process ps = null;
-							
-							try {
-								ps = Process.GetProcessById(PID);
-								if (ps != null) {
-									garbageTimer.Enabled = false;
-									
-									var obsoleteTimer = psTimer.Where(t => t.processID == PID).ToList();
-									int cntRemove = obsoleteTimer.Count;
-						
-									foreach(clsProcessTimer pt in obsoleteTimer)
-									{
-										pt.Enabled = false;
-										psTimer.Remove(pt);
-										Debug.WriteLine("nicht mehr benötigten Timer entfernen PID: " + pt.processID, "execCommandProcess():REMOVE|PID");
-										pt.Dispose();
-									}
-									
-									//if (Process.GetProcessesByName(ps.ProcessName).Count > 1) 
-									{
-										//	Wenn > 1, dann sind noch mehr Instanzen vorhanden
-										var n = Process.GetProcessesByName(ps.ProcessName).Select(p => p.Id).Except(psTimer.Select(t => t.processID)).ToList();
-										if(n.Count == cntRemove)
-										{
-											//	Keine aktiven Timer auf weiteren Instanzen zu diesem Prozess vorhanden
-											_ProcessListToWatch.Remove(ps.ProcessName);
-										}
-									}
-									
-									Debug.WriteLine(string.Format("Neuen Prozess zur Überwachung hinzufügen: {0} / {1}",ps.ProcessName, ps.Id), "execCommandProcess():REMOVE|PID");
-								}
-							} catch (ArgumentException ae) {
-								
-								Debug.WriteLine("Error: AddProcess - Die Prozess ID: " + PID + " konnte nicht gefunden werden", "execCommandProcess():REMOVE|PID");
-								Debug.WriteLine(ae.Message, "execCommandProzess():REMOVE|PID");
-							}
-							finally
-							{
-								garbageTimer.Enabled = true;
-							}
-						}
-						
-						//	Name entfernt alle Instanzen eines Prozesses
-						if(dicCmd.TryGetValue("NAME", out name))
-						{
-							NAME = name as string;
-
-							try {
-								foreach(Process pcs in Process.GetProcessesByName(NAME))
-								{
-									PID = pcs.Id;
-									garbageTimer.Enabled = false;
-									
-									var obsoleteTimer = psTimer.Where(t => t.processID == pcs.Id).ToList();
-									
-									foreach(clsProcessTimer pt in obsoleteTimer)
-									{
-										pt.Enabled = false;
-										psTimer.Remove(pt);
-										Debug.WriteLine("nicht mehr benötigten Timer entfernen PID: " + pt.processID, "execCommandProcess():REMOVE|NAME");
-										pt.Dispose();
-										
-										_ProcessListToWatch.Remove(NAME);
-									}
-									
-									Debug.WriteLine(string.Format("Neuen Prozess zur Überwachung hinzufügen: {0} / {1}", NAME, PID), "execCommandProcess():REMOVE|NAME");
-								}
-							} catch (ArgumentException ae) {
-								
-								Debug.WriteLine("Error: AddProcess - Der Prozess mit dem Namen: " + NAME + " konnte nicht gefunden werden", "execCommandProzess():ADD|NAME");
-								Debug.WriteLine(ae.Message, "execCommandProzess():ADD|NAME");
-							}							
-							finally
-							{
-								garbageTimer.Enabled = true;
-							}
-						}
-					}
-					if (dicCmd.TryGetValue("RESET", out cmd)) {
-						
-					}
-//					garbageTimer.Start();
-					
-					//	#####
-					if (psTimer.Count > 0) {
-						Debug.WriteLine("#####");
-						foreach (clsProcessTimer element in psTimer) {
-							Debug.WriteLine(string.Format("PID: {0} | Enable: {1} | Intervall: {2}", element.processID, element.Enabled, element.Interval), "Debug: Ausgabe aller Timer|execCommandProcess():ADD|PID");
-						}
-						Debug.WriteLine("#####");						
-					}
-					else
-						Debug.WriteLine("Keine Aktiven Timer", "execCommandProcess():ADD|PID");
-					//	#####
+					break;
 				
-//				garbageTimer.Enabled = true;
-//				Debug.WriteLine("Command eingelesen: " + strCommand, "execCommandProcess()");
+				case "REMOVE":
+					dicCmd.Add(key, tmp);
+					tmp = ParseCmdLineParam("PID", strCommand, out hasValue);
+					if(hasValue && tmp != string.Empty)
+					{
+						int iPid = 0;
+						if(int.TryParse(tmp, out iPid))
+							dicCmd.Add("PID", iPid);
+					}
+					tmp = ParseCmdLineParam("NAME", strCommand, out hasValue);
+					if(hasValue && tmp != string.Empty)
+					{
+						dicCmd.Add("NAME", tmp);
+					}
+					break;
+				
+				case "RESET":
+					dicCmd.Add(key, tmp);
+					tmp = ParseCmdLineParam("PID", strCommand, out hasValue);
+					if(hasValue && tmp != string.Empty)
+					{
+						dicCmd.Add("PID", tmp);
+					}
+					break;
+			}
+			//	#####
+
+
+
+			//	#####
+			//	Verarbeiten der Commandos ADD
+			//	#####
+			object cmd, pid, name;
+			if (dicCmd.TryGetValue("ADD", out cmd)) 
+			{
+				int PID;
+				string NAME = "";
+				clsProcessTimer pst;
+				
+				//	#####
+				//	Verarbeiten der Commandos
+				//	Hinzufügen per Prozess ID
+				//	#####
+				if(dicCmd.TryGetValue("PID", out pid))
+				{
+					PID = (int)pid;
+					Process ps = null;
+					
+					try {
+						ps = Process.GetProcessById(PID);
+						if (ps != null) {
+							garbageTimer.Enabled = false;
+
+							pst = new clsProcessTimer(ps.Id, clsProcessTimer.enumIntervallState.normalInterval);
+							psTimer.Add(pst);
+							processToWatch = ps.ProcessName;
+							pst.Elapsed += timerTick;
+							pst.Enabled = true;
+
+							garbageTimer.Enabled = true;
+
+							Debug.WriteLine(string.Format("Neuen Prozess zur Überwachung hinzufügen: {0} / {1}",ps.ProcessName, ps.Id), "execCommandProcess():ADD|PID");
+						}
+					} catch (ArgumentException ae) {
+						
+						Debug.WriteLine("Error: AddProcess - Die Prozess ID: " + PID + " konnte nicht gefunden werden", "execCommandProcess():ADD|PID");
+						Debug.WriteLine(ae.Message, "execCommandProzess():ADD|NAME");
+					}
+				}
+				
+				//	#####
+				//	Verarbeiten der Commandos
+				//	Hinzufügen per Prozess Name
+				//	Übernimmt alle gefundenen Instanzen in die Überwachung
+				//	#####
+				if(dicCmd.TryGetValue("NAME", out name))
+				{
+					NAME = name as string;
+
+					try {
+						foreach(Process pcs in Process.GetProcessesByName(NAME))
+						{
+							psTimer.Add(pst = new clsProcessTimer(pcs.Id));
+							processToWatch = pcs.ProcessName;
+							pst.Enabled = true;
+							pst.Elapsed += timerTick;
+							Debug.WriteLine(string.Format("Neuen Prozess zur Überwachung hinzufügen: {0} / {1}",pcs.ProcessName, pcs.Id), "execCommandProcess():ADD|NAME");
+						}
+					} catch (ArgumentException ae) {
+						
+						Debug.WriteLine("Error: AddProcess - Der Prozess mit dem Namen: " + NAME + " konnte nicht gefunden werden", "execCommandProzess():ADD|NAME");
+						Debug.WriteLine(ae.Message, "execCommandProzess():ADD|NAME");
+					}							
+				}
+			}
 			
 			
+			//	#####
+			//	Verarbeiten der Commandos ADD
+			//	#####
+			if (dicCmd.TryGetValue("REMOVE", out cmd)) 
+			{
+				int PID;
+				string NAME = "";
+				clsProcessTimer pst;
+				
+				//	#####
+				//	Verarbeiten der Commandos
+				//	Entfernen per Prozess ID
+				//	#####
+				if(dicCmd.TryGetValue("PID", out pid))
+				{
+					PID = (int)pid;
+					Process ps = null;
+					
+					try {
+						ps = Process.GetProcessById(PID);
+						if (ps != null) {
+							garbageTimer.Enabled = false;
+							
+							var obsoleteTimer = psTimer.Where(t => t.processID == PID).ToList();
+							int cntRemove = obsoleteTimer.Count;
+				
+							foreach(clsProcessTimer pt in obsoleteTimer)
+							{
+								pt.Enabled = false;
+								psTimer.Remove(pt);
+								Debug.WriteLine("nicht mehr benötigten Timer entfernen PID: " + pt.processID, "execCommandProcess():REMOVE|PID");
+								pt.Dispose();
+							}
+							
+							//if (Process.GetProcessesByName(ps.ProcessName).Count > 1) 
+							{
+								//	Wenn > 1, dann sind noch mehr Instanzen vorhanden
+								var n = Process.GetProcessesByName(ps.ProcessName).Select(p => p.Id).Except(psTimer.Select(t => t.processID)).ToList();
+								if(n.Count == cntRemove)
+								{
+									//	Keine aktiven Timer auf weiteren Instanzen zu diesem Prozess vorhanden
+									_ProcessListToWatch.Remove(ps.ProcessName);
+								}
+							}
+							
+							Debug.WriteLine(string.Format("Neuen Prozess zur Überwachung hinzufügen: {0} / {1}",ps.ProcessName, ps.Id), "execCommandProcess():REMOVE|PID");
+						}
+					} catch (ArgumentException ae) {
+						
+						Debug.WriteLine("Error: AddProcess - Die Prozess ID: " + PID + " konnte nicht gefunden werden", "execCommandProcess():REMOVE|PID");
+						Debug.WriteLine(ae.Message, "execCommandProzess():REMOVE|PID");
+					}
+					finally
+					{
+						garbageTimer.Enabled = true;
+					}
+				}
+				
+				//	#####
+				//	Verarbeiten der Commandos
+				//	Entfernen per Prozess Name
+				//	Entfernt alle Instanzen eines Prozesses
+				//	#####
+				if(dicCmd.TryGetValue("NAME", out name))
+				{
+					NAME = name as string;
+
+					try {
+						foreach(Process pcs in Process.GetProcessesByName(NAME))
+						{
+							PID = pcs.Id;
+							garbageTimer.Enabled = false;
+							
+							var obsoleteTimer = psTimer.Where(t => t.processID == pcs.Id).ToList();
+							
+							foreach(clsProcessTimer pt in obsoleteTimer)
+							{
+								pt.Enabled = false;
+								psTimer.Remove(pt);
+								Debug.WriteLine("nicht mehr benötigten Timer entfernen PID: " + pt.processID, "execCommandProcess():REMOVE|NAME");
+								pt.Dispose();
+								
+								_ProcessListToWatch.Remove(NAME);
+							}
+							
+							Debug.WriteLine(string.Format("Neuen Prozess zur Überwachung hinzufügen: {0} / {1}", NAME, PID), "execCommandProcess():REMOVE|NAME");
+						}
+					} catch (ArgumentException ae) {
+						
+#if DEBUG
+						Debug.WriteLine("Error: AddProcess - Der Prozess mit dem Namen: " + NAME + " konnte nicht gefunden werden", "execCommandProzess():ADD|NAME");
+						Debug.WriteLine(ae.Message, "execCommandProzess():ADD|NAME");
+#else
+						throw ae.Message;
+#endif				
+					}							
+					finally
+					{
+						garbageTimer.Enabled = true;
+					}
+				}
+			}
+			
+			if (dicCmd.TryGetValue("RESET", out cmd)) 
+			{
+				garbageTimer.Enabled = false();
+				
+				garbageTimer.Enabled = true;
+			}
+			
+			//	#####
+#if DEBUG
+			if (psTimer.Count > 0) {
+				Debug.WriteLine("#####");
+				foreach (clsProcessTimer element in psTimer) {
+					Debug.WriteLine(string.Format("PID: {0} | Enable: {1} | Intervall: {2} | State: {3}", element.processID, element.Enabled, element.Interval, element.timerState.ToString()), "Debug: Ausgabe aller Timer|execCommandProcess():ADD|PID");
+				}
+				Debug.WriteLine("#####");						
+			}
+			else
+				Debug.WriteLine("Keine Aktiven Timer", "execCommandProcess():ADD|PID");
 			
 			foreach (var element in dicCmd) {
 				Debug.WriteLine(element.Key + "=" + element.Value, "execCommandProcess():Key=Value");
 			}
 			Debug.WriteLine("Command eingelesen: " + strCommand, "execCommandProcess()");
+			//	#####
+#endif				
 			return true;
 		}
 		
