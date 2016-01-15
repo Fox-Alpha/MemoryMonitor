@@ -215,7 +215,14 @@ namespace MemoryMonitor
 					NotificationIcon notificationIcon = new NotificationIcon();
 					notificationIcon.notifyIcon.Visible = true;
 					
+					try{
 					Application.Run();
+					}
+					catch (Exception e)
+					{
+						throw;
+					}
+					
 
 					notificationIcon.notifyIcon.Dispose();
 				} else {
@@ -358,6 +365,10 @@ namespace MemoryMonitor
 			return FullFileName;
 		}
 		
+		/// <summary>
+		/// Fragt Proztess Informationen per WMI von einem (Remote) System ab
+		/// TODO: Umbau das diese Informationen dynamisch abgefragt werden können, Prozessname, Host, Lokal
+		/// </summary>
 		void getRemoteWMIData_WMILight()
 		{
 			var wmiQuery = "Select Name,ProcessID,creationdate,Caption,commandline,executablepath,WorkingSetSize,peakWorkingSetSize,OSName From Win32_Process where name = 'JM4.exe'";
