@@ -276,6 +276,7 @@ namespace MemoryMonitor
 				{
 					
 					Debug.WriteLine("Die ProzessID " + psID + " konnte nicht gefunden werden!\r\n" + ae.Message, "TimerTick()");
+					throw;
 				}
 			}
 			
@@ -921,6 +922,8 @@ namespace MemoryMonitor
 						
 						Debug.WriteLine("Error: AddProcess - Die Prozess ID: " + PID + " konnte nicht gefunden werden", "execCommandProcess():ADD|PID");
 						Debug.WriteLine(ae.Message, "execCommandProzess():ADD|NAME");
+						
+						throw;
 					}
 				}
 				
@@ -946,6 +949,8 @@ namespace MemoryMonitor
 						
 						Debug.WriteLine("Error: AddProcess - Der Prozess mit dem Namen: " + NAME + " konnte nicht gefunden werden", "execCommandProzess():ADD|NAME");
 						Debug.WriteLine(ae.Message, "execCommandProzess():ADD|NAME");
+						
+						throw;
 					}							
 				}
 			}
@@ -958,7 +963,6 @@ namespace MemoryMonitor
 			{
 				int PID;
 				string NAME = "";
-				clsProcessTimer pst;
 				
 				//	#####
 				//	Verarbeiten der Commandos
@@ -985,23 +989,24 @@ namespace MemoryMonitor
 								pt.Dispose();
 							}
 							
-							//if (Process.GetProcessesByName(ps.ProcessName).Count > 1) 
+							//	Wenn n = entfernter Counter, dann sind keine weiteren Instanzen mehr in der Überwachung vorhanden
+							var n = Process.GetProcessesByName(ps.ProcessName).Select(p => p.Id).Except(psTimer.Select(t => t.processID)).ToList();
+							if(n.Count == cntRemove)
 							{
-								//	Wenn > 1, dann sind noch mehr Instanzen vorhanden
-								var n = Process.GetProcessesByName(ps.ProcessName).Select(p => p.Id).Except(psTimer.Select(t => t.processID)).ToList();
-								if(n.Count == cntRemove)
-								{
-									//	Keine aktiven Timer auf weiteren Instanzen zu diesem Prozess vorhanden
-									_ProcessListToWatch.Remove(ps.ProcessName);
-								}
+								//	Keine aktiven Timer auf weiteren Instanzen zu diesem Prozess vorhanden
+								//	Prozessnamen aus Liste entfernen
+								_ProcessListToWatch.Remove(ps.ProcessName);
 							}
 							
 							Debug.WriteLine(string.Format("Neuen Prozess zur Überwachung hinzufügen: {0} / {1}",ps.ProcessName, ps.Id), "execCommandProcess():REMOVE|PID");
 						}
 					} catch (ArgumentException ae) {
-						
+#if DEBUG
 						Debug.WriteLine("Error: AddProcess - Die Prozess ID: " + PID + " konnte nicht gefunden werden", "execCommandProcess():REMOVE|PID");
 						Debug.WriteLine(ae.Message, "execCommandProzess():REMOVE|PID");
+#else
+						throw;
+#endif
 					}
 					finally
 					{
@@ -1044,7 +1049,7 @@ namespace MemoryMonitor
 						Debug.WriteLine("Error: AddProcess - Der Prozess mit dem Namen: " + NAME + " konnte nicht gefunden werden", "execCommandProzess():ADD|NAME");
 						Debug.WriteLine(ae.Message, "execCommandProzess():ADD|NAME");
 #else
-						throw ae.Message;
+						throw;
 #endif				
 					}							
 					finally
@@ -1056,7 +1061,7 @@ namespace MemoryMonitor
 			
 			if (dicCmd.TryGetValue("RESET", out cmd)) 
 			{
-				garbageTimer.Enabled = false();
+				garbageTimer.Enabled = false;
 				
 				garbageTimer.Enabled = true;
 			}
