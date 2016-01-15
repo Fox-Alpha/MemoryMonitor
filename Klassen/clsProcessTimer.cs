@@ -7,13 +7,15 @@
  */
 using System;
 using System.Diagnostics;
+using System.ComponentModel;
 
 namespace MemoryMonitor.Klassen
 {
 	/// <summary>
 	/// Description of clsProcessTimer.
 	/// </summary>
-	public class clsProcessTimer : System.Windows.Forms.Timer
+//	public class clsProcessTimer : System.Windows.Forms.Timer
+	public class clsProcessTimer : System.Timers.Timer
 	{
 		#region properties
 		
@@ -100,7 +102,8 @@ namespace MemoryMonitor.Klassen
 		{
 			processID = 0;
 			Enabled = false;
-			Tick += timerTick;
+			//Tick += timerTick;
+			this.Elapsed += timerTick;
 			setIntervalState(enumIntervallState.normalInterval);
 		}
 		
@@ -108,7 +111,8 @@ namespace MemoryMonitor.Klassen
 		{
 			processID =  PID > 0 ? PID : 0;
 			Enabled = false;
-			Tick += timerTick;
+//			Tick += timerTick;
+			this.Elapsed += timerTick;
 			setIntervalState(enumIntervallState.normalInterval);
 		}
 
@@ -116,7 +120,8 @@ namespace MemoryMonitor.Klassen
 		{
 			processID = PID > 0 ? PID : 0;
 			Enabled = false;
-			Tick += timerTick;
+//			Tick += timerTick;
+			this.Elapsed += timerTick;
 			setIntervalState(eIS);
 		}
 		
@@ -132,14 +137,17 @@ namespace MemoryMonitor.Klassen
 			switch (iState) 
 			{
 				case enumIntervallState.normalInterval:
+					timerState = enumIntervallState.normalInterval;
 					Interval = normalInterval;
 					break;
 				
 				case enumIntervallState.warningInterval:
+					timerState = enumIntervallState.warningInterval;
 					Interval = warningInterval;
 					break;
 
 				case enumIntervallState.criticalInterval:
+					timerState = enumIntervallState.criticalInterval;
 					Interval = criticalInterval;
 					break;
 			}
@@ -196,7 +204,7 @@ namespace MemoryMonitor.Klassen
 		/// <param name="e"></param>
 		void timerTick(object sender, EventArgs e)
 		{
-//			Debug.WriteLine("Tick Funktion in Klasse");
+//			Debug.WriteLine("Tick Funktion in Klasse: " + processID);
 		}
 		
 		#endregion
