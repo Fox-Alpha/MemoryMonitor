@@ -1,0 +1,72 @@
+﻿Die Anwendung kann auf einfache Weise über eine sogenannte Command.File steuern
+Folgende Commands sind verfügbar.
+
+Steuern der Timer
+=================
+
+Über das Command 'TIMER' können die Timer der einzelnen Überwachungen beeinflusst werden.
+Hiermit kann sowohl ein bestimmter Timer unter angabe einer Prozess ID gesteuert werden oder alle zur Zeit aktiven Timer.
+
+Timer
+	-Start [PID=]	= 		Starten der Timer
+	-Stop [PID=]		= 		Stoppen der aller Timer
+	-Intervall [PID=] = Setzen der Timer Intervalle
+		-Normal=		=		Wert zum auslösen der Überwachung ausgehend vom 'Normalen' Zustand der Anwendung. Dieser Wert wird in Millisekunden angegeben. Defaultwert entspricht ca. alle 4 Minuten.
+		-Warnung=	=		Wert zum auslösen der Überwachung ausgehend vom 'Warnung' Zustand der Anwendung. Dieser Wert wird in Millisekunden angegeben. Defaultwert entspricht ca. alle 45 Sekunden.
+		-Critical=	=		Wert zum auslösen der Überwachung ausgehend vom 'Critischen' Zustand der Anwendung. Dieser Wert wird in Millisekunden angegeben. Defaultwert entspricht ca. alle 15 Sekunden
+	-Reset [PID=]	=		Alle Timer auf Default Werte zurücksetzen. Stoppen und erneut starten.
+
+
+Steuern der Prozessüberwachung
+==============================
+Über das Command 'PROZESS' kann die Überwachung einzelner Prozesse gesteuert werden. Für ADD und REMOVE sind noch die Optionen NAME und PID verfügbar.
+Über diese Optionen kann ein einzelner Prozess gezielt in die Überwachung eingetragen oder entfernt werden. Beispielsweise könnte ein bestimmter offener Datei-Explorer überwacht werden.
+Mit der Angabe von NAME können alle laufenden Instanzen einer Anwendung schnell und einfach in die Überwachung aufgenommen werden.
+
+
+Prozess 
+	-ADD			=		Fügt einen Prozess der Überwachung hinzu
+		-PID=		=		Hinzufügen eines Prozesses anhand der ProzessID
+		-NAME=		= 		Hinzufügen eines Prozesses anhand des Prozess Namen. Hierbei nicht die Datei Extension der Anwedung mit angeben.
+	-RESET			=		Setzt die Einstellungen und den aktuellen Status einer oder aller Prozesse auf den Ausgangswert zurück
+		-ALL		=		Setzt alle Prozesse zurück
+	-REMOVE
+		-PID=		=		Hinzufügen eines Prozesses anhand der ProzessID
+		-NAME=		= 		Hinzufügen eines Prozesses anhand des Prozess Namen. Hierbei nicht die Datei Extension der Anwedung mit angeben.
+
+
+Prozess Status		= 		Schreiben einer Datei mit allen Metadaten zur Prozessüberwachung
+
+
+Steuern der Screenshot Funktion
+===============================
+
+Erstellt zu einem beliebigen Zeitpunkt einen Screenshot. 
+Über Name und PID kann ein Screenshot nur einer aktiven Anwendung erstellt werden. 
+Hierbei wird versucht das Hauptfenster des Prozesses in den Vordergrung zu bringen und dann einen Screensot nur von diesem Fenster zu erstellen.
+Die Optionen DIR und FILE steuern den Ort und den Namen des erstellten Screenshots. Werden diese nicht angegeben wird die Ausgabe von dieser Anwendung gesteuert.
+
+Screenshot			=		Auslösen eines Screenshots
+     -DIR=           =       Angabe eines abweichenden Ausgabeverzeichnisses
+     -FILE=          =       Angabe eines abweichenden Dateinamen
+     -NAME=          =       Screenshot des Prozesses "Name" anlegen
+     -PID=          =       Screenshot des Prozesses mit "PID" anlegen
+
+Steuern der Log Ausgaben
+========================
+
+LOG
+	PATH				= 		Setzen des Logverzeichnisses
+
+Beispiel
+--------
+Verwendet und erzeugt den Pfad für die Ausgabe der Prozess Log Dateien
+
+Log -Path=[Pfad Zum Log Verzeichnis]
+
+Beenden der Anwendung
+=====================
+EXIT
+QUIT
+
+Beendet alle Überwachungen und schließt die Anwendung
