@@ -53,10 +53,15 @@ namespace MemoryMonitor
 		}
 		
 		Dictionary<string, string> alias = new Dictionary<string, string>();
-		
-		private string _commandFile = "c:\\temp\\MemUsageLog\\command.file";
-		private string _commandResultFile = "c:\\temp\\MemUsageLog\\command.result";
-		private string _commandStatusFile = "c:\\temp\\MemUsageLog\\command.status";
+
+        string protokollSavePath = @"c:\temp\MemUsageLog\";
+        string protokollFileNamePrefix = @"MemLog";
+        string protokollFileLogExt = "csv";
+        string protokollImageExt = "png";
+
+        private string _commandFile = "command.file";
+		private string _commandResultFile = "command.result";
+		private string _commandStatusFile = "command.status";
 		
 		public string commandFile {
 			get { return _commandFile; }
@@ -87,10 +92,6 @@ namespace MemoryMonitor
 			}
 		}
 		
-		string protokollSavePath = @"c:\temp\MemUsageLog\";
-		string protokollFileNamePrefix = @"MemLog";
-		string protokollFileLogExt = "csv";
-		string protokollImageExt = "png";
 		#endregion
 
 		#region Initialize icon and menu
@@ -137,12 +138,21 @@ namespace MemoryMonitor
 			ComponentResourceManager resources = new ComponentResourceManager(typeof(NotificationIcon));
 			notifyIcon.Icon = (Icon)resources.GetObject("$this.Icon");
 			notifyIcon.ContextMenu = notificationMenu;
-			
-//			getRemoteWMIData_WMILight();
-			
-			#region systemfilewatcher
-			m_Watcher.Path = "c:\\temp\\MemUsageLog\\";
-			m_Watcher.Filter = "command.file";
+
+            //			getRemoteWMIData_WMILight();
+
+            //  Sicherstellen das der Pfad zum überwachen existiert
+            if (!Directory.Exists(protokollSavePath))
+            {
+                Directory.CreateDirectory(protokollSavePath);
+            }
+            //  Command Datei leer erstellen
+            commandFile = protokollSavePath + commandFile;
+            File.WriteAllText(commandFile, "");
+
+            #region systemfilewatcher
+            m_Watcher.Path = protokollSavePath;
+            m_Watcher.Filter = "command.file";//commandFile;
 			m_Watcher.NotifyFilter = NotifyFilters.Size;
 //						NotifyFilters.LastAccess | NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.Attributes |
 //						NotifyFilters.CreationTime | NotifyFilters.Security | NotifyFilters.DirectoryName
