@@ -44,5 +44,5 @@ Enthaltene Informationen
 	
 	Dateigröße:
 
-	74 byte * {Intervall pro Min.} * 60 Minuten * 24 Stunden ~~ 426.240 Byte {Bei 15 sek. Intervall}
+	74 byte * {Intervall pro Min.} * 60 Minuten * 24 Stunden ~~ 426.240 Byte {Bei 15 sek. Intervall} ~ 0,4 MB
 
