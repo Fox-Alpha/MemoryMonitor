@@ -890,7 +890,12 @@ namespace MemoryMonitor
 					{
 						dicCmd.Add("NAME", tmp);
 					}
-					break;
+                    tmp = ParseCmdLineParam("ALL", strCommand, out hasValue);
+                    if (hasValue && tmp != string.Empty)
+                    {
+                        dicCmd.Add("ALL", tmp);
+                    }
+                    break;
 				
 				case "RESET":
 					dicCmd.Add(key, tmp);
@@ -978,7 +983,7 @@ namespace MemoryMonitor
 			
 			
 			//	#####
-			//	Verarbeiten der Commandos ADD
+			//	Verarbeiten der Commandos REMOVE
 			//	#####
 			if (dicCmd.TryGetValue("REMOVE", out cmd)) 
 			{
@@ -1079,17 +1084,32 @@ namespace MemoryMonitor
 					}
 				}
 			}
-			
-			if (dicCmd.TryGetValue("RESET", out cmd)) 
+
+            //	#####
+            //	Verarbeiten der Commandos
+            //	Zurücksetzen eines Timers auf Anfangswerte
+            //	Alle oder per PID bzw Name
+            //	#####
+            if (dicCmd.TryGetValue("RESET", out cmd)) 
 			{
 				garbageTimer.Enabled = false;
 				
 				garbageTimer.Enabled = true;
 			}
-			
-			//	#####
+
+            //	#####
+            //	Verarbeiten der Commandos
+            //	Entfernen Aller Prozesse
+            //	#####
+            if (dicCmd.TryGetValue("ALL", out cmd))
+            {
+                garbageTimer.Enabled = false;
+
+                garbageTimer.Enabled = true;
+            }
+            //	#####
 #if DEBUG
-			if (psTimer.Count > 0) {
+            if (psTimer.Count > 0) {
 				Debug.WriteLine("#####");
 				foreach (clsProcessTimer element in psTimer) {
 					Debug.WriteLine(string.Format("PID: {0} | Enable: {1} | Intervall: {2} | State: {3}", element.processID, element.Enabled, element.Interval, element.timerState.ToString()), "Debug: Ausgabe aller Timer|execCommandProcess():ADD|PID");
@@ -1135,16 +1155,65 @@ namespace MemoryMonitor
 		/// <returns></returns>
 		bool execCommandScreenshot(string strCommand)
 		{
-			/*
+            /*
 			 * Screenshot			=		Auslösen eines Screenshots
+             *      [DIR]           =       Angabe eines abweichenden Ausgabeverzeichnisses
+             *      [FILE]          =       Angabe eines abweichenden Dateinamen
+             *      [NAME]          =       Screenshot des Prozesses "Name" anlegen
+             *      [PID]          =       Screenshot des Prozesses mit "PID" anlegen
 			 */
-			
-			Dictionary<string, string> dicCmd = new Dictionary<string, string>() {
-													{"SCREENSHOT", ""},
-												};
-			
-			Debug.WriteLine("Command eingelesen: " + strCommand, "execCommandScreenshot()");
-			return true;
+
+            Dictionary<string, object> dicCmd = new Dictionary<string, object>();
+//            {	{"SCREENSHOT", ""},	};
+            List<string> cmds = new List<string>() { "SCREENSHOT", "FILE", "DIR", "PID", "NAME"};
+
+            bool hasValue;
+            string tmp = "";
+            string key = "";
+
+            for (int i = 0; i < cmds.Count; i++)
+            {
+                key = cmds[i];
+                if (( tmp = ParseCmdLineParam(key, strCommand, out hasValue) ) != string.Empty)
+                {
+                    //	Command gefunden
+                    break;
+                }
+            }
+
+            //	#####
+            //	Aufsplitten der Parameter
+            //	#####
+            switch (key.ToUpper())
+            {
+                case "SCREENSHOT":
+                    dicCmd.Add(key, tmp);
+                    tmp = ParseCmdLineParam("PID", strCommand, out hasValue);
+                    if (hasValue && tmp != string.Empty)
+                    {
+                        int iPid = 0;
+                        if (int.TryParse(tmp, out iPid))
+                            dicCmd.Add("PID", iPid);
+                    }
+                    tmp = ParseCmdLineParam("NAME", strCommand, out hasValue);
+                    if (hasValue && tmp != string.Empty)
+                    {
+                        dicCmd.Add("NAME", tmp);
+                    }
+                    tmp = ParseCmdLineParam("DIR", strCommand, out hasValue);
+                    if (hasValue && tmp != string.Empty)
+                    {
+                        dicCmd.Add("DIR", tmp);
+                    }
+                    tmp = ParseCmdLineParam("FILE", strCommand, out hasValue);
+                    if (hasValue && tmp != string.Empty)
+                    {
+                        dicCmd.Add("FILE", tmp);
+                    }
+
+                    break;
+            }
+            return true;
 		}
 
 		/// <summary>
