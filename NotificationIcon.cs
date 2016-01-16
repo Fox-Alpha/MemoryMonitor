@@ -295,7 +295,13 @@ namespace MemoryMonitor
 					Debug.WriteLine("Die ProzessID " + psID + " konnte nicht gefunden werden!\r\n" + ae.Message, "TimerTick()");
 					throw;
 				}
-			}
+                finally
+                {
+                    ( (clsProcessTimer) sender ).Stop();
+                    ( (clsProcessTimer) sender ).obsolete = true;
+                    Debug.WriteLine("Prozess nicht mehr aktiv, Timer wird deaktiviert. ArgumentException - Finally", "timerTick()");
+                }
+            }
 			
 			string strCsv;
 			string fileName;
@@ -303,8 +309,13 @@ namespace MemoryMonitor
 			if (pcs != null)
 			{
 				fileName = checkFileName(0, pcs.ProcessName, pcs.Id);
-				Debug.WriteLine(string.Format("PID: {0} | Name: {1} | Time: {2}| CurrentMem: {3}| PeakMem: {4}", pcs.Id, pcs.ProcessName, DateTime.Now.ToString(), pcs.PrivateMemorySize64.ToString(), pcs.PeakWorkingSet64), "TimerTick()");
-				strCsv = string.Format("{0};\"{1}\";\"{2}\";{3};{4}\r\n", DateTime.Now.ToString("HH:mm:ss"), pcs.Id, pcs.ProcessName, pcs.PrivateMemorySize64.ToString(), pcs.PeakWorkingSet64);
+				Debug.WriteLine(string.Format("PID: {0,6} | Name: {1,20} | Time: {2,10} | CurrentMem: {3,15:N0} | PeakMem: {4,15:N0} |", pcs.Id, pcs.ProcessName, DateTime.Now.ToString(), pcs.PrivateMemorySize64, pcs.PeakWorkingSet64), "TimerTick()");
+				strCsv = string.Format("{0,10};{1,6};\"{2,20}\";{3,15:N0};{4,15:N0}\r\n", 
+                    DateTime.Now.ToString("HH:mm:ss"), 
+                    pcs.Id, 
+                    pcs.ProcessName, 
+                    pcs.PrivateMemorySize64, 
+                    pcs.PeakWorkingSet64);
 				
 				if (!File.Exists(fileName)) 
 				{
@@ -1213,6 +1224,26 @@ namespace MemoryMonitor
 
                     break;
             }
+#if DEBUG
+            if (psTimer.Count > 0)
+            {
+                Debug.WriteLine("#####");
+                foreach (clsProcessTimer element in psTimer)
+                {
+                    Debug.WriteLine(string.Format("PID: {0} | Enable: {1} | Intervall: {2} | State: {3}", element.processID, element.Enabled, element.Interval, element.timerState.ToString()), "Debug: Ausgabe aller Timer|execCommandProcess():ADD|PID");
+                }
+                Debug.WriteLine("#####");
+            }
+            else
+                Debug.WriteLine("Keine Aktiven Timer", "execCommandProcess():ADD|PID");
+
+            foreach (var element in dicCmd)
+            {
+                Debug.WriteLine(element.Key + "=" + element.Value, "execCommandProcess():Key=Value");
+            }
+            Debug.WriteLine("Command eingelesen: " + strCommand, "execCommandProcess()");
+            //	#####
+#endif
             return true;
 		}
 
