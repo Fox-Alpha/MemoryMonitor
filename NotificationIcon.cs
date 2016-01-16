@@ -228,7 +228,7 @@ namespace MemoryMonitor
 					try{
 					Application.Run();
 					}
-					catch (Exception e)
+					catch (Exception)
 					{
 						throw;
 					}
