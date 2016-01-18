@@ -286,20 +286,25 @@ namespace MemoryMonitor
 
 				try 
 				{
+                    //  ProzessID aus dem Timer ermitteln
 					psID = ((clsProcessTimer)sender).processID;
+                    //  Prozess anhand der ID ermitteln
 					pcs = Process.GetProcessById(psID);
 				} 
-				catch (ArgumentException ae) 
+				catch (ArgumentException ae) // Wird z.B. bei nicht mehr aktiven Prozess ausgelöst
 				{
 					
 					Debug.WriteLine("Die ProzessID " + psID + " konnte nicht gefunden werden!\r\n" + ae.Message, "TimerTick()");
-					throw;
-				}
-                finally
-                {
+                    //  Stoppen des Timers, wird ja nicht mehr benötigt
                     ( (clsProcessTimer) sender ).Stop();
+                    //  Timer als nicht mehr notwendig für den GarbageTimer setzen.
                     ( (clsProcessTimer) sender ).obsolete = true;
-                    Debug.WriteLine("Prozess nicht mehr aktiv, Timer wird deaktiviert. ArgumentException - Finally", "timerTick()");
+                    //throw;
+                }
+                finally //  Code der immer bzw. auch nach einem Fehler ausgeführt werden muss.
+                {
+                    Debug.WriteLine("Finally: Wird immer ausgeführt: " + ( (clsProcessTimer) sender ).processID, "timerTick()");
+                    //( (clsProcessTimer) sender ).Dispose();
                 }
             }
 			
