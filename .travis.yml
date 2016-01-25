@@ -4,3 +4,4 @@ install:
   - nuget restore MemoryMonitor - vs2015.sln
 mono:
   - latest
+  
