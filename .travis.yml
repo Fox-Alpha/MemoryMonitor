@@ -1,7 +1,7 @@
 language: csharp
-solution: MemoryMonitor - vs2015.sln
+solution: MemoryMonitor.sln
 install:
-  - nuget restore MemoryMonitor - vs2015.sln
+  - nuget restore MemoryMonitor.sln
 mono:
   - latest
   
