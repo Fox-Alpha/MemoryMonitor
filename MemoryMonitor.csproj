@@ -52,9 +52,6 @@
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
-    <Reference Include="WmiLight">
-      <HintPath>..\getScreenShot\packages\WmiLight.2.0.15248.3\lib\net40\WmiLight.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Forms\MainForm.cs" />

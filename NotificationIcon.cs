@@ -21,7 +21,7 @@ using System.Text.RegularExpressions;
 using System.ComponentModel;
 using System.Management;
 
-using WmiLight;
+//using WmiLight;
 
 using MemoryMonitor.Forms;
 using MemoryMonitor.Klassen;
@@ -397,28 +397,28 @@ namespace MemoryMonitor
 		/// </summary>
 		void getRemoteWMIData_WMILight()
 		{
-			var wmiQuery = "Select Name,ProcessID,creationdate,Caption,commandline,executablepath,WorkingSetSize,peakWorkingSetSize,OSName From Win32_Process where name = 'JM4.exe'";
-			var opt = new WmiConnectionOptions() { EnablePackageEncryption = true };
-			
-			try
-			{
-				using (WmiConnection con = new WmiConnection(@"\\HH-VS-JM-003\root\cimv2", opt))
-				{
-					con.Open();
-
-				    foreach (WmiObject partition in con.CreateQuery(wmiQuery))
-				    {
-				    	Debug.WriteLine("##### ----- #####");
-				    	foreach (var element in partition.GetPropertyNames()) {
-				    		Debug.WriteLine(element + " : " + partition.GetPropertyValue(element));
-				    	}
-				    }
-				}
-			}
-			catch(Exception e)
-			{
-				Debug.WriteLine(e.Message);
-			}
+//			var wmiQuery = "Select Name,ProcessID,creationdate,Caption,commandline,executablepath,WorkingSetSize,peakWorkingSetSize,OSName From Win32_Process where name = 'JM4.exe'";
+//			var opt = new WmiConnectionOptions() { EnablePackageEncryption = true };
+//			
+//			try
+//			{
+//				using (WmiConnection con = new WmiConnection(@"\\HH-VS-JM-003\root\cimv2", opt))
+//				{
+//					con.Open();
+//
+//				    foreach (WmiObject partition in con.CreateQuery(wmiQuery))
+//				    {
+//				    	Debug.WriteLine("##### ----- #####");
+//				    	foreach (var element in partition.GetPropertyNames()) {
+//				    		Debug.WriteLine(element + " : " + partition.GetPropertyValue(element));
+//				    	}
+//				    }
+//				}
+//			}
+//			catch(Exception e)
+//			{
+//				Debug.WriteLine(e.Message);
+//			}
 		}
 		
 		#region helper
