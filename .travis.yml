@@ -4,4 +4,32 @@ install:
   - nuget restore MemoryMonitor.sln
 mono:
   - latest
-  
+# before_deploy:
+# Das Ergebnis zippen
+deploy:
+  provider: releases
+  api_key: "355d3d75231fb7debe2cb8d10e04e8dc188bf8ef"
+  # wenn gezipt, dann zip version deployen
+  file: "MemoryMonitor.exe"
+  skip_cleanup: true
+  on:
+    tags: true
+branches:
+# blacklist
+  except:
+    - /^(i:experimental)-.*$/
+    - develop
+
+# whitelist
+  only:
+    - release
+    - support
+    - /^(i:feature)-.*$/
+notifications:
+  email:
+    # recipients:
+      # - travis-ci@buck-software.de
+      # - dirk@buck-software.de
+      # on_success: [always|never|change] default: change
+    on_success: always
+    # on_failure: [always|never|change] # default: always
