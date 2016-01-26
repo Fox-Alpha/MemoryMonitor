@@ -1,0 +1,2 @@
+Sammlung von bekannten Fehlern in der Anwendung
+===============================================
