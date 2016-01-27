@@ -16,9 +16,9 @@ deploy:
     tags: true
 branches:
 # blacklist
-  except:
-    - /^(i:experimental)-.*$/
-    - develop
+  # except:
+    # - /^(i:experimental)-.*$/
+    # - develop
 
 # whitelist
   only:
