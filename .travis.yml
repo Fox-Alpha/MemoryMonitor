@@ -25,6 +25,7 @@ branches:
     - release
     - support
     - /^(i:feature\/feature)-.*$/
+    - /^(i:feature\/Feature)-.*$/
 notifications:
   email:
     # recipients:
